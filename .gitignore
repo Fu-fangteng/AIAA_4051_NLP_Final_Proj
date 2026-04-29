@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Large model weights (exceed GitHub limits)
+*.safetensors
+optimizer.pt
+rng_state.pth
+scheduler.pt
+
+# HuggingFace dataset cache
+*.arrow
+*.lock
+
+# Binary result caches (regenerable)
+*.pkl
+
+# Archives
+*.zip

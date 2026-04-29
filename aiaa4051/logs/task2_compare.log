@@ -1,0 +1,16 @@
+nohup: ignoring input
+/home/user/.conda/envs/attnlrp/lib/python3.10/site-packages/transformers/tokenization_utils_base.py:1601: FutureWarning: `clean_up_tokenization_spaces` was not set. It will be set to `True` by default. This behavior will be depracted in transformers v4.45, and will be then set to `False` by default. For more details check this issue: https://github.com/huggingface/transformers/issues/31884
+  warnings.warn(
+CP-LRP patches applied: GPT2MLP, LayerNorm, Dropout, GPT2Attention
+Using device: cuda
+Compared 5/20
+Compared 10/20
+Compared 15/20
+Compared 20/20
+Saved comparison data.
+Saved: aiaa4051/task2/comparison/compare_sample0.png
+Saved: aiaa4051/task2/comparison/compare_sample1.png
+Saved: aiaa4051/task2/comparison/compare_sample2.png
+Saved: aiaa4051/task2/comparison/compare_sample3.png
+Saved: aiaa4051/task2/comparison/compare_sample4.png
+Saved: aiaa4051/task2/comparison/mean_delta.png

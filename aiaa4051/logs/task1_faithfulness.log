@@ -1,0 +1,30 @@
+nohup: ignoring input
+/home/user/.conda/envs/attnlrp/lib/python3.10/site-packages/transformers/tokenization_utils_base.py:1601: FutureWarning: `clean_up_tokenization_spaces` was not set. It will be set to `True` by default. This behavior will be depracted in transformers v4.45, and will be then set to `False` by default. For more details check this issue: https://github.com/huggingface/transformers/issues/31884
+  warnings.warn(
+Using device: cuda
+Loaded 200 samples for faithfulness evaluation.
+Evaluated 10/200 samples
+Evaluated 20/200 samples
+Evaluated 30/200 samples
+Evaluated 40/200 samples
+Evaluated 50/200 samples
+Evaluated 60/200 samples
+Evaluated 70/200 samples
+Evaluated 80/200 samples
+Evaluated 90/200 samples
+Evaluated 100/200 samples
+Evaluated 110/200 samples
+Evaluated 120/200 samples
+Evaluated 130/200 samples
+Evaluated 140/200 samples
+Evaluated 150/200 samples
+Evaluated 160/200 samples
+Evaluated 170/200 samples
+Evaluated 180/200 samples
+Evaluated 190/200 samples
+Evaluated 200/200 samples
+Saved: aiaa4051/task1/faithfulness/faithfulness_curve.png
+
+Normalized AUC — AttnLRP: 0.1359  |  Random: 0.1245
+(Lower AUC = faster confidence drop = more faithful explanation)
+Saved raw curve data to aiaa4051/task1/faithfulness/faithfulness_data.pkl

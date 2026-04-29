@@ -1,0 +1,14 @@
+nohup: ignoring input
+/home/user/.conda/envs/attnlrp/lib/python3.10/site-packages/transformers/tokenization_utils_base.py:1601: FutureWarning: `clean_up_tokenization_spaces` was not set. It will be set to `True` by default. This behavior will be depracted in transformers v4.45, and will be then set to `False` by default. For more details check this issue: https://github.com/huggingface/transformers/issues/31884
+  warnings.warn(
+CP-LRP patches applied: GPT2MLP, LayerNorm, Dropout, GPT2Attention
+Using device: cuda
+Computing parameter relevance for Model A (SciQ)...
+Computing parameter relevance for Model B (SQuAD_v2)...
+Saved: aiaa4051/task3/comparison/param_relevance_comparison.png
+Saved: aiaa4051/task3/comparison/param_relevance_diff.png
+
+Top 3 layers with largest difference: [11, 10, 2]
+  Layer 11: Δ=-0.0177  → Model B (SQuAD_v2) relies more
+  Layer 10: Δ=+0.0054  → Model A (SciQ) relies more
+  Layer  2: Δ=+0.0051  → Model A (SciQ) relies more
