@@ -263,7 +263,7 @@ Runs Pixel Flipping on all 200 samples:
 - `aiaa4051/task1/faithfulness/faithfulness_curve.png`
 - `aiaa4051/task1/faithfulness/faithfulness_data.pkl`
 
-**Current results:** AttnLRP AUC = 0.1648, Random AUC = 0.1444. The AttnLRP curve is non-monotonic: confidence initially drops as positive-relevance tokens are masked, then **rises** when masking crosses into negative-relevance (suppressive) tokens — whose removal releases inhibitory effects. See §6 Limitations for discussion.
+**Current results:** AttnLRP AUC = 0.1359, Random AUC = 0.1245. The AttnLRP curve is non-monotonic: confidence initially drops as positive-relevance tokens are masked, then **rises** when masking crosses into negative-relevance (suppressive) tokens — whose removal releases inhibitory effects. See §6 Limitations for discussion.
 
 ---
 
@@ -352,11 +352,11 @@ Generates:
 - Named entities and question keywords consistently receive the highest positive relevance (green).
 - The `Answer:` delimiter token is strongly negative (red) — correctly captured as suppressive.
 - Function words and punctuation are near-neutral.
-- **Faithfulness AUC:** AttnLRP = 0.1648, Random = 0.1444. Non-monotonic curve shape due to signed relevance scores (see §6).
+- **Faithfulness AUC:** AttnLRP = 0.1359, Random = 0.1245. Non-monotonic curve shape due to signed relevance scores (see §6).
 
 ### Task 2
 
-- Post-SFT model assigns substantially higher relevance to `Question:` and `Answer:` structural tokens (+8 to +15 at positions 30–59).
+- Post-SFT model assigns substantially higher relevance to question-side and answer-boundary tokens, especially positions 31–33 and 58–59.
 - Post-SFT model reduces relevance on mid-context background content.
 - Named entities related to the answer (e.g., `Normandy`, `centuries`) gain stronger positive relevance after fine-tuning.
 
@@ -385,7 +385,7 @@ Generates:
 
 #### L1 — Faithfulness metric mismatch with signed scores (Task 1)
 
-The standard Pixel Flipping protocol sorts tokens by **descending** relevance. With signed CP-LRP scores, this masks all positive-relevance tokens first. Once the masking crosses into negative-relevance tokens, their removal *increases* model confidence (released inhibition), causing a non-monotonic confidence curve. The AttnLRP AUC (0.1648) thus appears *higher* (worse) than the random baseline (0.1444), which is misleading.
+The standard Pixel Flipping protocol sorts tokens by **descending** relevance. With signed CP-LRP scores, this masks all positive-relevance tokens first. Once the masking crosses into negative-relevance tokens, their removal *increases* model confidence (released inhibition), causing a non-monotonic confidence curve. The AttnLRP AUC (0.1359) thus appears *higher* (worse) than the random baseline (0.1245), which is misleading.
 
 **Fix**: either (a) add a **worst-order baseline** (mask by *ascending* relevance) to bound the metric; or (b) switch to **Comprehensiveness** (drop in confidence when masking only top-K positive tokens) and **Sufficiency** (confidence using only top-K positive tokens), which are designed for signed attribution methods.
 

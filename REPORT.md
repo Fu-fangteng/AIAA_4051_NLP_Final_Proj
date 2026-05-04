@@ -48,8 +48,8 @@ We evaluated faithfulness using the **Pixel Flipping** protocol: tokens are prog
 
 | Method | Normalised AUC |
 |---|---|
-| AttnLRP (CP-LRP, relevance order) | 0.1648 |
-| Random baseline | 0.1444 |
+| AttnLRP (CP-LRP, relevance order) | 0.1359 |
+| Random baseline | 0.1245 |
 
 Contrary to the expectation that AttnLRP should produce a lower AUC, the AttnLRP curve shows a **non-monotonic pattern**: confidence initially declines gently as the most positively-relevant tokens are masked (0–50%), but then **rises sharply around 60–70% masked** before finally declining.
 
@@ -86,9 +86,9 @@ Several clear changes are observable:
 
 The mean delta chart (averaged over N=20 samples, Figure 5) reveals several systematic patterns:
 
-- **Token positions 30–35** (corresponding roughly to the start of the `Question:` section) show the largest positive mean deltas (+8 to +13), indicating the fine-tuned model assigns substantially more importance to the question itself.
-- **Token positions 57–59** also show large positive deltas (+11 to +15), corresponding to question keywords and the `Answer:` boundary.
-- **Token position 55** shows the largest negative delta (≈ −5), suggesting the model has learned to suppress certain structural tokens in the context–question boundary region.
+- **Token positions 31–33** (corresponding roughly to the start of the `Question:` section) show strong positive mean deltas, with position 33 reaching about +13.0, indicating the fine-tuned model assigns substantially more importance to the question itself.
+- **Token positions 58–59** show the largest positive deltas (+15.7 and +11.4), corresponding to question keywords and the `Answer:` boundary.
+- **Token position 55** shows the largest negative delta (≈ −4.4), suggesting the model has learned to suppress certain structural tokens in the context–question boundary region.
 
 **Conclusion for Task 2:** Sequential fine-tuning on SQuAD_v2 and SciQ causes GPT-2 to reorganise its token attribution patterns substantially. The fine-tuned model places greater importance on question-side tokens and answer-relevant entities, while de-emphasising background contextual content. This aligns with the expected effect of task-specific training: the model learns to focus on the information most predictive of the target answer format.
 
@@ -123,14 +123,14 @@ The difference plot (Figure 7, Δ = Model A − Model B) reveals one dominant an
 
 | Layer | Δ (A − B) | Interpretation |
 |---|---|---|
-| 11 | **−0.017** (large negative) | Model B relies substantially more on the final layer |
-| 3 | +0.005 | Model A relies slightly more on Layer 3 |
-| 10 | +0.005 | Model A relies slightly more on Layer 10 |
+| 11 | **−0.0177** (large negative) | Model B relies substantially more on the final layer |
+| 10 | +0.0054 | Model A relies slightly more on Layer 10 |
+| 2 | +0.0051 | Model A relies slightly more on Layer 2 |
 | 0 | −0.001 | Nearly identical |
 
 **The most striking finding is at Layer 11** (the final Transformer block). Model B (SQuAD_v2) assigns approximately 1.7 percentage points more normalised relevance to this layer than Model A (SciQ). In transformer architectures, the final layers are generally associated with task-specific, output-oriented computation — they transform abstract representations into prediction-ready features. SQuAD_v2 requires the model to locate a specific span of text within a long context, a process that demands more final-layer processing to select and format the answer. SciQ, being shorter structured QA, may rely more on intermediate layers for factual retrieval.
 
-**Model A relies slightly more on mid-network layers (3, 10)**, which are associated with compositional and relational reasoning. SciQ questions often require combining multiple scientific concepts, which may engage these intermediate representational layers more intensely.
+**Model A relies slightly more on mid-network layers (2, 10)**, which are associated with compositional and relational reasoning. SciQ questions often require combining multiple scientific concepts, which may engage these intermediate representational layers more intensely.
 
 **Conclusion for Task 3:** While both models preserve the same macro-scale layer relevance profile inherited from GPT-2's pretraining, the fine-tuning domain produces measurable differences in layer utilisation. Reading comprehension (SQuAD_v2) drives stronger final-layer engagement, consistent with the need for precise span extraction. Structured science QA (SciQ) distributes relevance slightly more towards intermediate layers, consistent with concept-level reasoning.
 

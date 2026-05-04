@@ -1,0 +1,215 @@
+# AIAA 4051 NLP Final Project — 完整目录结构
+
+> **图例**
+> - ✅ 已同步到 GitHub，合作者可通过 `git clone` 获得
+> - ⚠️ **未同步**，需通过本文件夹中的压缩包手动补充
+
+---
+
+```
+project/
+├── .gitignore                                         ✅
+├── README.md                                          ✅
+├── REPORT.md                                          ✅
+├── requirements.txt                                   ✅
+├── lxt_patch.py                                       ✅
+├── task1_attnlrp.py                                   ✅
+├── task1_data_prep.py                                 ✅
+├── task1_faithfulness.py                              ✅
+├── task1_visualize.py                                 ✅
+├── task2_compare.py                                   ✅
+├── task2_sft.py                                       ✅
+├── task3_param_lrp.py                                 ✅
+├── task3_train_models.py                              ✅
+├── test.py                                            ✅
+│
+├── LRP-eXplains-Transformers/                         ✅ (完整库代码)
+│   ├── setup.py
+│   ├── LICENSE
+│   ├── README.md
+│   ├── lxt/                                           ✅
+│   ├── examples/                                      ✅
+│   ├── tests/                                         ✅
+│   └── docs/                                          ✅
+│
+├── gpt2/
+│   ├── config.json                                    ✅
+│   ├── merges.txt                                     ✅
+│   ├── vocab.json                                     ✅
+│   └── model.safetensors                              ⚠️ part2_gpt2_and_task3_modelA.zip
+│
+└── aiaa4051/
+    │
+    ├── checkpoints/
+    │   ├── sft_final/
+    │   │   ├── config.json                            ✅
+    │   │   ├── generation_config.json                 ✅
+    │   │   ├── merges.txt                             ✅
+    │   │   ├── special_tokens_map.json                ✅
+    │   │   ├── tokenizer_config.json                  ✅
+    │   │   ├── vocab.json                             ✅
+    │   │   └── model.safetensors                      ⚠️ part1_checkpoints.zip
+    │   │
+    │   ├── step1_squad/
+    │   │   ├── checkpoint-625/
+    │   │   │   ├── config.json                        ✅
+    │   │   │   ├── generation_config.json             ✅
+    │   │   │   ├── trainer_state.json                 ✅
+    │   │   │   ├── training_args.bin                  ✅
+    │   │   │   ├── model.safetensors                  ⚠️ part1_checkpoints.zip
+    │   │   │   ├── optimizer.pt                       ⚠️ part1_checkpoints.zip
+    │   │   │   ├── rng_state.pth                      ⚠️ part1_checkpoints.zip
+    │   │   │   └── scheduler.pt                       ⚠️ part1_checkpoints.zip
+    │   │   ├── checkpoint-1250/
+    │   │   │   ├── config.json                        ✅
+    │   │   │   ├── generation_config.json             ✅
+    │   │   │   ├── trainer_state.json                 ✅
+    │   │   │   ├── training_args.bin                  ✅
+    │   │   │   ├── model.safetensors                  ⚠️ part1_checkpoints.zip
+    │   │   │   ├── optimizer.pt                       ⚠️ part1_checkpoints.zip
+    │   │   │   ├── rng_state.pth                      ⚠️ part1_checkpoints.zip
+    │   │   │   └── scheduler.pt                       ⚠️ part1_checkpoints.zip
+    │   │   └── final/
+    │   │       ├── config.json                        ✅
+    │   │       ├── generation_config.json             ✅
+    │   │       └── model.safetensors                  ⚠️ part1_checkpoints.zip
+    │   │
+    │   └── step2_sciq/
+    │       ├── checkpoint-375/
+    │       │   ├── config.json                        ✅
+    │       │   ├── generation_config.json             ✅
+    │       │   ├── trainer_state.json                 ✅
+    │       │   ├── training_args.bin                  ✅
+    │       │   ├── model.safetensors                  ⚠️ part1_checkpoints.zip
+    │       │   ├── optimizer.pt                       ⚠️ part1_checkpoints.zip
+    │       │   ├── rng_state.pth                      ⚠️ part1_checkpoints.zip
+    │       │   └── scheduler.pt                       ⚠️ part1_checkpoints.zip
+    │       └── checkpoint-750/
+    │           ├── config.json                        ✅
+    │           ├── generation_config.json             ✅
+    │           ├── trainer_state.json                 ✅
+    │           ├── training_args.bin                  ✅
+    │           ├── model.safetensors                  ⚠️ part1_checkpoints.zip
+    │           ├── optimizer.pt                       ⚠️ part1_checkpoints.zip
+    │           ├── rng_state.pth                      ⚠️ part1_checkpoints.zip
+    │           └── scheduler.pt                       ⚠️ part1_checkpoints.zip
+    │
+    ├── data/
+    │   ├── sciq_train3000/
+    │   │   ├── dataset_info.json                      ✅
+    │   │   ├── state.json                             ✅
+    │   │   ├── data-00000-of-00001.arrow              ⚠️ part3_task3_modelB_data_pkl.zip
+    │   │   ├── cache-0a2003fd3e28959d.arrow           ⚠️ part3_task3_modelB_data_pkl.zip
+    │   │   └── cache-b0da29c27a9b4134.arrow           ⚠️ part3_task3_modelB_data_pkl.zip
+    │   ├── squad_v2_dev200/
+    │   │   ├── dataset_info.json                      ✅
+    │   │   ├── state.json                             ✅
+    │   │   └── data-00000-of-00001.arrow              ⚠️ part3_task3_modelB_data_pkl.zip
+    │   ├── squad_v2_train3000/
+    │   │   ├── dataset_info.json                      ✅
+    │   │   ├── state.json                             ✅
+    │   │   ├── data-00000-of-00001.arrow              ⚠️ part3_task3_modelB_data_pkl.zip
+    │   │   └── cache-693140be8ec462b9.arrow           ⚠️ part3_task3_modelB_data_pkl.zip
+    │   └── squad_v2_train5000/
+    │       ├── dataset_info.json                      ✅
+    │       ├── state.json                             ✅
+    │       ├── data-00000-of-00001.arrow              ⚠️ part3_task3_modelB_data_pkl.zip
+    │       └── cache-568b9706cd516010.arrow           ⚠️ part3_task3_modelB_data_pkl.zip
+    │
+    ├── logs/
+    │   ├── task1_attnlrp.log                          ✅
+    │   ├── task1_faithfulness.log                     ✅
+    │   ├── task2_compare.log                          ✅
+    │   ├── task2_sft.log                              ✅
+    │   ├── task3_param_lrp.log                        ✅
+    │   └── task3_train_models.log                     ✅
+    │
+    ├── task1/
+    │   ├── faithfulness/
+    │   │   ├── faithfulness_curve.png                 ✅
+    │   │   └── faithfulness_data.pkl                  ⚠️ part3_task3_modelB_data_pkl.zip
+    │   └── relevance/
+    │       ├── sample_0.png ~ sample_199.png          ✅ (200 张图)
+    │       └── relevances.pkl                         ⚠️ part3_task3_modelB_data_pkl.zip
+    │
+    ├── task2/
+    │   ├── comparison/
+    │   │   ├── compare_sample0.png ~ compare_sample4.png  ✅
+    │   │   ├── mean_delta.png                         ✅
+    │   │   └── comparison.pkl                         ⚠️ part3_task3_modelB_data_pkl.zip
+    │   ├── finetuned/                                 (空目录)
+    │   └── pretrained/                                (空目录)
+    │
+    └── task3/
+        ├── comparison/
+        │   ├── param_relevance_comparison.png         ✅
+        │   └── param_relevance_diff.png               ✅
+        ├── modelA/
+        │   ├── checkpoint-375/
+        │   │   ├── config.json                        ✅
+        │   │   ├── generation_config.json             ✅
+        │   │   ├── trainer_state.json                 ✅
+        │   │   ├── training_args.bin                  ✅
+        │   │   ├── model.safetensors                  ⚠️ part2_gpt2_and_task3_modelA.zip
+        │   │   ├── optimizer.pt                       ⚠️ part2_gpt2_and_task3_modelA.zip
+        │   │   ├── rng_state.pth                      ⚠️ part2_gpt2_and_task3_modelA.zip
+        │   │   └── scheduler.pt                       ⚠️ part2_gpt2_and_task3_modelA.zip
+        │   ├── checkpoint-750/
+        │   │   ├── config.json                        ✅
+        │   │   ├── generation_config.json             ✅
+        │   │   ├── trainer_state.json                 ✅
+        │   │   ├── training_args.bin                  ✅
+        │   │   ├── model.safetensors                  ⚠️ part2_gpt2_and_task3_modelA.zip
+        │   │   ├── optimizer.pt                       ⚠️ part2_gpt2_and_task3_modelA.zip
+        │   │   ├── rng_state.pth                      ⚠️ part2_gpt2_and_task3_modelA.zip
+        │   │   └── scheduler.pt                       ⚠️ part2_gpt2_and_task3_modelA.zip
+        │   ├── checkpoint-1125/
+        │   │   ├── config.json                        ✅
+        │   │   ├── generation_config.json             ✅
+        │   │   ├── trainer_state.json                 ✅
+        │   │   ├── training_args.bin                  ✅
+        │   │   ├── model.safetensors                  ⚠️ part2_gpt2_and_task3_modelA.zip
+        │   │   ├── optimizer.pt                       ⚠️ part2_gpt2_and_task3_modelA.zip
+        │   │   ├── rng_state.pth                      ⚠️ part2_gpt2_and_task3_modelA.zip
+        │   │   └── scheduler.pt                       ⚠️ part2_gpt2_and_task3_modelA.zip
+        │   └── final/
+        │       ├── config.json                        ✅
+        │       ├── generation_config.json             ✅
+        │       ├── merges.txt                         ✅
+        │       ├── special_tokens_map.json            ✅
+        │       ├── tokenizer_config.json              ✅
+        │       ├── vocab.json                         ✅
+        │       └── model.safetensors                  ⚠️ part2_gpt2_and_task3_modelA.zip
+        └── modelB/
+            ├── checkpoint-375/                        (结构同 modelA/checkpoint-375)
+            │   ├── config.json                        ✅
+            │   ├── generation_config.json             ✅
+            │   ├── trainer_state.json                 ✅
+            │   ├── training_args.bin                  ✅
+            │   ├── model.safetensors                  ⚠️ part3_task3_modelB_data_pkl.zip
+            │   ├── optimizer.pt                       ⚠️ part3_task3_modelB_data_pkl.zip
+            │   ├── rng_state.pth                      ⚠️ part3_task3_modelB_data_pkl.zip
+            │   └── scheduler.pt                       ⚠️ part3_task3_modelB_data_pkl.zip
+            ├── checkpoint-750/                        (同上)
+            │   ├── ...                                ⚠️ part3_task3_modelB_data_pkl.zip
+            ├── checkpoint-1125/                       (同上)
+            │   ├── ...                                ⚠️ part3_task3_modelB_data_pkl.zip
+            └── final/
+                ├── config.json                        ✅
+                ├── generation_config.json             ✅
+                ├── merges.txt                         ✅
+                ├── special_tokens_map.json            ✅
+                ├── tokenizer_config.json              ✅
+                ├── vocab.json                         ✅
+                └── model.safetensors                  ⚠️ part3_task3_modelB_data_pkl.zip
+```
+
+---
+
+## 缺失文件汇总
+
+| 压缩包 | 内容 | 大小（解压后） |
+|--------|------|----------------|
+| `part1_checkpoints.zip` | `aiaa4051/checkpoints/` 全部模型权重 | ~952 MB |
+| `part2_gpt2_and_task3_modelA.zip` | `gpt2/model.safetensors` + `aiaa4051/task3/modelA/` 全部权重 | ~762 MB |
+| `part3_task3_modelB_data_pkl.zip` | `aiaa4051/task3/modelB/` + `aiaa4051/data/*.arrow` + `*.pkl` 缓存 | ~710 MB |

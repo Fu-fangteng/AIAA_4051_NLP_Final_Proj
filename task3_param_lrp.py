@@ -1,12 +1,15 @@
 """
 Task 3-B: Per-Layer Parameter Relevance Comparison (Model A vs Model B)
-Extends CP-LRP to the MLP weight level using LRP-epsilon rule:
-    R_W ∝ |W * x|  summed over each Transformer layer's MLP.
+Computes an activation-magnitude proxy for each Transformer layer's MLP:
+    R_layer = |x_mean @ W|.sum()   (x_mean = mean over sequence positions)
+
+Each model is evaluated on test inputs that match its own training format:
+  - Model A (SciQ)    : "Question: ...\nAnswer:" (no Context prefix)
+  - Model B (SQuAD_v2): "Context: ...\nQuestion: ...\nAnswer:"
 
 Requires:
   - aiaa4051/task3/modelA/final   (from task3_train_models.py)
   - aiaa4051/task3/modelB/final   (from task3_train_models.py)
-  - lxt_patch.py                  (shared CP-LRP helper)
 
 Run on Mac or GPU. Expected time: 20 min (CPU) / 5 min (GPU).
 """
@@ -16,9 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from transformers import GPT2Tokenizer
 
-from lxt_patch import apply_gpt2_cplrp, load_lrp_model
-
-apply_gpt2_cplrp(verbose=True)
+from lxt_patch import load_lrp_model
 
 tokenizer = GPT2Tokenizer.from_pretrained("/home/user/project/gpt2")
 tokenizer.pad_token = tokenizer.eos_token
@@ -26,64 +27,75 @@ tokenizer.pad_token = tokenizer.eos_token
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-# ── Per-layer parameter relevance ─────────────────────────────────────────────
+# ── Model-appropriate test inputs ─────────────────────────────────────────────
+# Model A was trained on SciQ format (no Context prefix).
+TEST_TEXTS_A = [
+    "Question: What is water made of?\nAnswer:",
+    "Question: What is the sun?\nAnswer:",
+    "Question: How do plants make food?\nAnswer:",
+]
 
-def compute_param_relevance(model_path, input_text):
-    """
-    Returns a list of floats (one per Transformer layer) representing
-    the total parameter relevance of each layer's MLP c_fc weights.
-    Uses LRP-epsilon rule: R ∝ |W * mean_activation|.
-    """
-    model = load_lrp_model(model_path, device)
-    tokens = tokenizer(input_text, return_tensors="pt")
-    input_ids = tokens["input_ids"].to(device)
-
-    # Register hooks to capture MLP input activations
-    layer_inputs = {}
-    hooks = []
-    for idx, block in enumerate(model.transformer.h):
-        def make_hook(i):
-            def hook_fn(module, inp, out):
-                layer_inputs[i] = inp[0].detach()
-            return hook_fn
-        hooks.append(block.mlp.c_fc.register_forward_hook(make_hook(idx)))
-
-    # Forward + backward
-    emb = model.get_input_embeddings()(input_ids).detach().requires_grad_(True)
-    logits = model(inputs_embeds=emb, use_cache=False).logits
-    logits[0, -1, :].max().backward()
-
-    for h in hooks:
-        h.remove()
-
-    # LRP-epsilon: R_layer = sum |W * x_mean|
-    param_relevances = []
-    for idx, block in enumerate(model.transformer.h):
-        W = block.mlp.c_fc.weight.detach()   # [out_features, in_features]
-        if idx in layer_inputs:
-            x = layer_inputs[idx]            # [1, seq_len, in_features]
-            x_mean = x.mean(dim=1)           # [1, in_features]
-            R = (x_mean @ W).abs().sum().item()
-        else:
-            R = 0.0
-        param_relevances.append(R)
-
-    return param_relevances
-
-# ── Test inputs (use several to get a more stable picture) ───────────────────
-test_texts = [
+# Model B was trained on SQuAD format (with Context prefix).
+TEST_TEXTS_B = [
     "Context: Water is a chemical compound of hydrogen and oxygen.\nQuestion: What is water?\nAnswer:",
     "Context: The sun is a star at the center of the solar system.\nQuestion: What is the sun?\nAnswer:",
     "Context: Photosynthesis is the process by which plants make food.\nQuestion: How do plants make food?\nAnswer:",
 ]
 
+# ── Per-layer parameter relevance ─────────────────────────────────────────────
+
+def compute_param_relevance(model_path, input_texts):
+    """
+    Returns a numpy array of shape [n_layers] with the activation-magnitude
+    proxy for each MLP c_fc layer, averaged over all input_texts.
+
+    R_layer = |x_mean @ W|.sum()
+    where x_mean is the mean hidden state over sequence positions.
+    No gradient computation is needed — uses torch.no_grad() throughout.
+    """
+    model = load_lrp_model(model_path, device)
+    all_per_layer = []
+
+    for input_text in input_texts:
+        input_ids = tokenizer(input_text, return_tensors="pt")["input_ids"].to(device)
+
+        layer_inputs = {}
+        hooks = []
+        for idx, block in enumerate(model.transformer.h):
+            def make_hook(i):
+                def hook_fn(module, inp, out):
+                    layer_inputs[i] = inp[0].detach()
+                return hook_fn
+            hooks.append(block.mlp.c_fc.register_forward_hook(make_hook(idx)))
+
+        with torch.no_grad():
+            model(input_ids=input_ids, use_cache=False)
+
+        for h in hooks:
+            h.remove()
+
+        per_layer = []
+        for idx, block in enumerate(model.transformer.h):
+            # GPT-2 Conv1D stores weight as (in_features, out_features) = (768, 3072)
+            W = block.mlp.c_fc.weight.detach()   # [768, 3072]
+            if idx in layer_inputs:
+                x      = layer_inputs[idx]        # [1, seq_len, 768]
+                x_mean = x.mean(dim=1)            # [1, 768]
+                R = (x_mean @ W).abs().sum().item()
+            else:
+                R = 0.0
+            per_layer.append(R)
+
+        all_per_layer.append(per_layer)
+
+    return np.mean(all_per_layer, axis=0)
+
+
 print("Computing parameter relevance for Model A (SciQ)...")
-rel_A_all = [compute_param_relevance("aiaa4051/task3/modelA/final", t) for t in test_texts]
-rel_A = np.mean(rel_A_all, axis=0)
+rel_A = compute_param_relevance("aiaa4051/task3/modelA/final", TEST_TEXTS_A)
 
 print("Computing parameter relevance for Model B (SQuAD_v2)...")
-rel_B_all = [compute_param_relevance("aiaa4051/task3/modelB/final", t) for t in test_texts]
-rel_B = np.mean(rel_B_all, axis=0)
+rel_B = compute_param_relevance("aiaa4051/task3/modelB/final", TEST_TEXTS_B)
 
 # ── Normalize for fair comparison ─────────────────────────────────────────────
 rel_A_norm = rel_A / (rel_A.sum() + 1e-8)
@@ -95,7 +107,6 @@ width  = 0.35
 
 fig, axes = plt.subplots(2, 1, figsize=(13, 8))
 
-# Absolute values
 ax = axes[0]
 ax.bar(layers - width/2, rel_A, width, label="Model A (SciQ)",     color="steelblue", alpha=0.85)
 ax.bar(layers + width/2, rel_B, width, label="Model B (SQuAD_v2)", color="coral",     alpha=0.85)
@@ -106,7 +117,6 @@ ax.set_xticks(layers)
 ax.legend()
 ax.grid(axis="y", alpha=0.3)
 
-# Normalized (relative contribution)
 ax = axes[1]
 ax.bar(layers - width/2, rel_A_norm, width, label="Model A (SciQ)",     color="steelblue", alpha=0.85)
 ax.bar(layers + width/2, rel_B_norm, width, label="Model B (SQuAD_v2)", color="coral",     alpha=0.85)

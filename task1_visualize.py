@@ -18,7 +18,6 @@ print(f"Loaded {len(data)} samples.")
 TOKENS_PER_ROW = 16   # tokens per row
 ROW_HEIGHT     = 0.7  # inches per row
 FONT_SIZE      = 10
-PAD            = 5    # bbox padding in points
 
 
 def plot_relevance(sample_idx=0):

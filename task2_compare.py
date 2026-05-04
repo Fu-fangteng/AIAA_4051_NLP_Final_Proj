@@ -28,7 +28,7 @@ tokenizer.pad_token = tokenizer.eos_token
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-model_pre  = load_lrp_model("gpt2",                          device)
+model_pre  = load_lrp_model("/home/user/project/gpt2",        device)
 model_post = load_lrp_model("aiaa4051/checkpoints/sft_final", device)
 
 dataset = load_from_disk("aiaa4051/data/squad_v2_dev200")
@@ -105,7 +105,7 @@ def plot_comparison(sample_idx=0):
     plt.close()
     print(f"Saved: {out}")
 
-for i in range(min(5, N)):
+for i in range(N):
     plot_comparison(i)
 
 # ── Summary: mean delta per token position ───────────────────────────────────

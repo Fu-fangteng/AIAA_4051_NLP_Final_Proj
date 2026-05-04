@@ -14,28 +14,45 @@ tokenizer.pad_token = tokenizer.eos_token
 # ── Tokenisation helpers ──────────────────────────────────────────────────────
 
 def tok_sciq(example):
-    text = f"Question: {example['question']}\nAnswer: {example['correct_answer']}"
-    enc  = tokenizer(text, truncation=True, max_length=128, padding="max_length")
-    enc["labels"] = enc["input_ids"].copy()
+    prompt    = f"Question: {example['question']}\nAnswer:"
+    full_text = prompt + f" {example['correct_answer']}"
+    enc = tokenizer(full_text, truncation=True, max_length=128, padding="max_length")
+
+    prompt_len = len(tokenizer(prompt, add_special_tokens=False)["input_ids"])
+    labels = enc["input_ids"].copy()
+    labels[:prompt_len] = [-100] * prompt_len
+    for i, mask in enumerate(enc["attention_mask"]):
+        if mask == 0:
+            labels[i] = -100
+    enc["labels"] = labels
     return enc
+
 
 def tok_squad(example):
     ans = example["answers"]["text"]
     answer_str = ans[0] if ans else "unanswerable"
-    text = (f"Context: {example['context'][:300]}\n"
-            f"Question: {example['question']}\n"
-            f"Answer: {answer_str}")
-    enc = tokenizer(text, truncation=True, max_length=256, padding="max_length")
-    enc["labels"] = enc["input_ids"].copy()
+    prompt = (f"Context: {example['context'][:300]}\n"
+              f"Question: {example['question']}\n"
+              f"Answer:")
+    full_text = prompt + f" {answer_str}"
+    enc = tokenizer(full_text, truncation=True, max_length=256, padding="max_length")
+
+    prompt_len = len(tokenizer(prompt, add_special_tokens=False)["input_ids"])
+    labels = enc["input_ids"].copy()
+    labels[:prompt_len] = [-100] * prompt_len
+    for i, mask in enumerate(enc["attention_mask"]):
+        if mask == 0:
+            labels[i] = -100
+    enc["labels"] = labels
     return enc
 
 # ── Generic trainer ───────────────────────────────────────────────────────────
 
-def train_model(dataset_name, output_dir, tokenize_fn, n_samples=3000,
+def train_model(dataset_path, output_dir, tokenize_fn, n_samples,
                 remove_cols=None):
-    print(f"\n=== Training on {dataset_name} → {output_dir} ===")
+    print(f"\n=== Training on {dataset_path} → {output_dir} ===")
     model = GPT2LMHeadModel.from_pretrained("/home/user/project/gpt2")
-    ds = load_from_disk(dataset_name)
+    ds = load_from_disk(dataset_path).select(range(n_samples))
     if remove_cols:
         ds = ds.map(tokenize_fn, batched=False, remove_columns=remove_cols)
     else:

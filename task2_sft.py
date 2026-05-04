@@ -18,17 +18,35 @@ tokenizer.pad_token = tokenizer.eos_token
 def tokenize_squad(example):
     ans = example["answers"]["text"]
     answer_str = ans[0] if ans else "unanswerable"
-    text = (f"Context: {example['context'][:300]}\n"
-            f"Question: {example['question']}\n"
-            f"Answer: {answer_str}")
-    enc = tokenizer(text, truncation=True, max_length=256, padding="max_length")
-    enc["labels"] = enc["input_ids"].copy()
+    prompt = (f"Context: {example['context'][:300]}\n"
+              f"Question: {example['question']}\n"
+              f"Answer:")
+    full_text = prompt + f" {answer_str}"
+    enc = tokenizer(full_text, truncation=True, max_length=256, padding="max_length")
+
+    # Mask prompt tokens from loss so the model only learns to predict the answer
+    prompt_len = len(tokenizer(prompt, add_special_tokens=False)["input_ids"])
+    labels = enc["input_ids"].copy()
+    labels[:prompt_len] = [-100] * prompt_len
+    for i, mask in enumerate(enc["attention_mask"]):
+        if mask == 0:
+            labels[i] = -100
+    enc["labels"] = labels
     return enc
 
+
 def tokenize_sciq(example):
-    text = f"Question: {example['question']}\nAnswer: {example['correct_answer']}"
-    enc = tokenizer(text, truncation=True, max_length=128, padding="max_length")
-    enc["labels"] = enc["input_ids"].copy()
+    prompt    = f"Question: {example['question']}\nAnswer:"
+    full_text = prompt + f" {example['correct_answer']}"
+    enc = tokenizer(full_text, truncation=True, max_length=128, padding="max_length")
+
+    prompt_len = len(tokenizer(prompt, add_special_tokens=False)["input_ids"])
+    labels = enc["input_ids"].copy()
+    labels[:prompt_len] = [-100] * prompt_len
+    for i, mask in enumerate(enc["attention_mask"]):
+        if mask == 0:
+            labels[i] = -100
+    enc["labels"] = labels
     return enc
 
 # ── Step 1: SQuAD_v2 ─────────────────────────────────────────────────────────
