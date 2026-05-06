@@ -222,12 +222,8 @@ def render_comparison_diverging(payload):
     ax.legend(loc="lower right", frameon=False, fontsize=11, labelspacing=1.2)
     ax.grid(axis="x", color=GRID, linewidth=0.75, alpha=0.7, zorder=0)
     ax.set_axisbelow(True)
-    
-    # Clean axis
-    for spine in ["top", "right", "left"]:
-        ax.spines[spine].set_visible(False)
-    ax.spines["bottom"].set_color(MUTED)
-    ax.spines["bottom"].set_linewidth(0.9)
+
+    _clean_axis(ax)
 
     fig.tight_layout(pad=2.0)
     _save(fig, "task3_comparison_plan_a_diverging")
@@ -278,11 +274,7 @@ def render_comparison_grouped(payload):
     ax.grid(axis="y", color=GRID, linewidth=0.75, alpha=0.7, zorder=0)
     ax.set_axisbelow(True)
 
-    # Clean axis
-    for spine in ["top", "right", "left"]:
-        ax.spines[spine].set_visible(False)
-    ax.spines["bottom"].set_color(MUTED)
-    ax.spines["bottom"].set_linewidth(0.9)
+    _clean_axis(ax)
 
     fig.tight_layout(pad=2.0)
     _save(fig, "task3_comparison_plan_b_grouped")

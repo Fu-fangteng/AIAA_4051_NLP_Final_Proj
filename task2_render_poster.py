@@ -62,6 +62,18 @@ def main():
     )
 
 
+def _set_style():
+    plt.rcParams.update({
+        "font.family": "DejaVu Sans",
+        "figure.facecolor": "white",
+        "axes.facecolor": "white",
+        "axes.edgecolor": "#E5E7EB",
+        "axes.labelcolor": "#111827",
+        "xtick.color": "#111827",
+        "ytick.color": "#111827",
+    })
+
+
 def render_question_heatmap(
     words,
     pre_importance,
@@ -72,15 +84,7 @@ def render_question_heatmap(
     sample_idx,
     out_base,
 ):
-    plt.rcParams.update({
-        "font.family": "DejaVu Sans",
-        "figure.facecolor": "white",
-        "axes.facecolor": "white",
-        "axes.edgecolor": "#E5E7EB",
-        "axes.labelcolor": "#111827",
-        "xtick.color": "#111827",
-        "ytick.color": "#111827",
-    })
+    _set_style()
 
     fig = plt.figure(figsize=(10.8, 5.8), dpi=160)
     gs = fig.add_gridspec(
