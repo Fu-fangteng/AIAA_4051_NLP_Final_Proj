@@ -2,48 +2,31 @@ import time
 
 import torch
 from datasets import load_from_disk
-from transformers import GPT2LMHeadModel, GPT2Tokenizer, Trainer, TrainingArguments
+from transformers import GPT2LMHeadModel, Trainer, TrainingArguments
 
-from training_config import apply_model_memory_settings, base_model_path, training_knobs
-
-
-tokenizer = None
-
-
-def tokenize_squad(example):
-    ans = example["answers"]["text"]
-    answer_str = ans[0] if ans else "unanswerable"
-    prompt = (
-        f"Context: {example['context'][:300]}\n"
-        f"Question: {example['question']}\n"
-        f"Answer:"
-    )
-    full_text = prompt + f" {answer_str}"
-    enc = tokenizer(full_text, truncation=True, max_length=256, padding="max_length")
-
-    prompt_len = len(tokenizer(prompt, add_special_tokens=False)["input_ids"])
-    labels = enc["input_ids"].copy()
-    labels[:prompt_len] = [-100] * prompt_len
-    for i, mask in enumerate(enc["attention_mask"]):
-        if mask == 0:
-            labels[i] = -100
-    enc["labels"] = labels
-    return enc
+from training_config import (
+    apply_model_memory_settings,
+    base_model_path,
+    get_device,
+    load_tokenizer,
+    training_knobs,
+)
+from tokenization_utils import make_squad_tokenizer
 
 
 def main():
-    global tokenizer
     knobs = training_knobs()
     max_steps = knobs["max_steps"] if knobs["max_steps"] > 0 else 20
     model_path = base_model_path()
+    device = get_device()
 
     print(f"Base model: {model_path}")
     print(f"CUDA available: {torch.cuda.is_available()}")
     if torch.cuda.is_available():
         print(f"GPU: {torch.cuda.get_device_name(0)}")
 
-    tokenizer = GPT2Tokenizer.from_pretrained(model_path)
-    tokenizer.pad_token = tokenizer.eos_token
+    tokenizer = load_tokenizer(model_path)
+    tokenize_squad = make_squad_tokenizer(tokenizer)
 
     model = GPT2LMHeadModel.from_pretrained(model_path)
     apply_model_memory_settings(model)
