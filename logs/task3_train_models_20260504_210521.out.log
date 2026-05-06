@@ -1,0 +1,30 @@
+
+=== Training on aiaa4051/data/sciq_train3000 -> aiaa4051/task3/modelA ===
+{'loss': 4.2872, 'grad_norm': 36.5242919921875, 'learning_rate': 4.582222222222222e-05, 'epoch': 0.27}
+{'loss': 3.8964, 'grad_norm': 35.754493713378906, 'learning_rate': 4.1377777777777784e-05, 'epoch': 0.53}
+{'loss': 3.7199, 'grad_norm': 37.74401092529297, 'learning_rate': 3.6933333333333334e-05, 'epoch': 0.8}
+{'loss': 3.5442, 'grad_norm': 24.091934204101562, 'learning_rate': 3.248888888888889e-05, 'epoch': 1.07}
+{'loss': 2.6336, 'grad_norm': 35.104156494140625, 'learning_rate': 2.8044444444444444e-05, 'epoch': 1.33}
+{'loss': 2.6281, 'grad_norm': 43.93294143676758, 'learning_rate': 2.36e-05, 'epoch': 1.6}
+{'loss': 2.597, 'grad_norm': 33.1961669921875, 'learning_rate': 1.9155555555555558e-05, 'epoch': 1.87}
+{'loss': 2.2604, 'grad_norm': 32.39693069458008, 'learning_rate': 1.4711111111111111e-05, 'epoch': 2.13}
+{'loss': 1.9284, 'grad_norm': 29.771696090698242, 'learning_rate': 1.0266666666666668e-05, 'epoch': 2.4}
+{'loss': 1.9212, 'grad_norm': 29.92366600036621, 'learning_rate': 5.822222222222223e-06, 'epoch': 2.67}
+{'loss': 2.0614, 'grad_norm': 36.683837890625, 'learning_rate': 1.3777777777777778e-06, 'epoch': 2.93}
+{'train_runtime': 219.8411, 'train_samples_per_second': 40.939, 'train_steps_per_second': 5.117, 'train_loss': 2.8398257954915365, 'epoch': 3.0}
+Saved: aiaa4051/task3/modelA/final
+
+=== Training on aiaa4051/data/squad_v2_train3000 -> aiaa4051/task3/modelB ===
+{'loss': 2.7668, 'grad_norm': 19.660709381103516, 'learning_rate': 4.5866666666666666e-05, 'epoch': 0.27}
+{'loss': 2.2525, 'grad_norm': 24.556987762451172, 'learning_rate': 4.142222222222222e-05, 'epoch': 0.53}
+{'loss': 1.9757, 'grad_norm': 33.1645622253418, 'learning_rate': 3.697777777777778e-05, 'epoch': 0.8}
+{'loss': 1.9662, 'grad_norm': 38.4854736328125, 'learning_rate': 3.253333333333333e-05, 'epoch': 1.07}
+{'loss': 1.4571, 'grad_norm': 27.519105911254883, 'learning_rate': 2.8088888888888893e-05, 'epoch': 1.33}
+{'loss': 1.3082, 'grad_norm': 57.52129364013672, 'learning_rate': 2.3644444444444446e-05, 'epoch': 1.6}
+{'loss': 1.4086, 'grad_norm': 23.816917419433594, 'learning_rate': 1.9200000000000003e-05, 'epoch': 1.87}
+{'loss': 1.1346, 'grad_norm': 18.79548454284668, 'learning_rate': 1.4755555555555556e-05, 'epoch': 2.13}
+{'loss': 1.0104, 'grad_norm': 32.75584411621094, 'learning_rate': 1.031111111111111e-05, 'epoch': 2.4}
+{'loss': 0.9905, 'grad_norm': 33.76544952392578, 'learning_rate': 5.866666666666667e-06, 'epoch': 2.67}
+{'loss': 1.1189, 'grad_norm': 20.42644500732422, 'learning_rate': 1.4222222222222223e-06, 'epoch': 2.93}
+{'train_runtime': 348.2359, 'train_samples_per_second': 25.845, 'train_steps_per_second': 3.231, 'train_loss': 1.5674252658420138, 'epoch': 3.0}
+Saved: aiaa4051/task3/modelB/final

@@ -1,0 +1,31 @@
+Using device: cuda
+Faithfulness batch size: 64
+Loaded 200 samples for faithfulness evaluation.
+Evaluated 10/200 samples
+Evaluated 20/200 samples
+Evaluated 30/200 samples
+Evaluated 40/200 samples
+Evaluated 50/200 samples
+Evaluated 60/200 samples
+Evaluated 70/200 samples
+Evaluated 80/200 samples
+Evaluated 90/200 samples
+Evaluated 100/200 samples
+Evaluated 110/200 samples
+Evaluated 120/200 samples
+Evaluated 130/200 samples
+Evaluated 140/200 samples
+Evaluated 150/200 samples
+Evaluated 160/200 samples
+Evaluated 170/200 samples
+Evaluated 180/200 samples
+Evaluated 190/200 samples
+Evaluated 200/200 samples
+Saved: aiaa4051/task1/faithfulness/faithfulness_curve.png
+
+Normalized AUC:
+  AttnLRP (relevance order) : 0.0883
+  Random baseline           : 0.0382
+  Reverse order baseline    : 0.0012
+(Lower AUC = faster confidence drop = more faithful explanation)
+Saved raw curve data to aiaa4051/task1/faithfulness/faithfulness_data.pkl

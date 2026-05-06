@@ -14,19 +14,22 @@ from transformers import GPT2Tokenizer
 from datasets import load_from_disk
 
 from lxt_patch import apply_gpt2_cplrp, get_relevance, load_lrp_model
+from training_config import base_model_path
 
 apply_gpt2_cplrp(verbose=True)
 
 # ── Set N_SAMPLES=5 for local debug; change to 200 before GPU cluster ──
 N_SAMPLES = 200  # <-- change to 200 on cluster
 
-tokenizer = GPT2Tokenizer.from_pretrained("/home/user/project/gpt2")
+BASE_MODEL = base_model_path()
+
+tokenizer = GPT2Tokenizer.from_pretrained(BASE_MODEL)
 tokenizer.pad_token = tokenizer.eos_token
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-model = load_lrp_model("/home/user/project/gpt2", device)
+model = load_lrp_model(BASE_MODEL, device)
 
 dataset = load_from_disk("aiaa4051/data/squad_v2_dev200")
 all_relevances = []

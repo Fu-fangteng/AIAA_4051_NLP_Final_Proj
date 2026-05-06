@@ -8,7 +8,18 @@ Tip: run together with task2_sft.py in one GPU session to save time.
 from transformers import GPT2LMHeadModel, GPT2Tokenizer, TrainingArguments, Trainer
 from datasets import load_from_disk
 
-tokenizer = GPT2Tokenizer.from_pretrained("/home/user/project/gpt2")
+from training_config import (
+    apply_model_memory_settings,
+    base_model_path,
+    model_dir_is_loadable,
+    training_knobs,
+)
+
+
+BASE_MODEL = base_model_path()
+TRAINING_KNOBS = training_knobs()
+
+tokenizer = GPT2Tokenizer.from_pretrained(BASE_MODEL)
 tokenizer.pad_token = tokenizer.eos_token
 
 # ── Tokenisation helpers ──────────────────────────────────────────────────────
@@ -50,8 +61,14 @@ def tok_squad(example):
 
 def train_model(dataset_path, output_dir, tokenize_fn, n_samples,
                 remove_cols=None):
-    print(f"\n=== Training on {dataset_path} → {output_dir} ===")
-    model = GPT2LMHeadModel.from_pretrained("/home/user/project/gpt2")
+    final_dir = output_dir + "/final"
+    if model_dir_is_loadable(final_dir, GPT2LMHeadModel):
+        print(f"\n=== Final checkpoint exists and loads; skipping: {final_dir} ===")
+        return
+
+    print(f"\n=== Training on {dataset_path} -> {output_dir} ===")
+    model = GPT2LMHeadModel.from_pretrained(BASE_MODEL)
+    apply_model_memory_settings(model)
     ds = load_from_disk(dataset_path).select(range(n_samples))
     if remove_cols:
         ds = ds.map(tokenize_fn, batched=False, remove_columns=remove_cols)
@@ -62,16 +79,20 @@ def train_model(dataset_path, output_dir, tokenize_fn, n_samples,
     args = TrainingArguments(
         output_dir=output_dir,
         num_train_epochs=3,
-        per_device_train_batch_size=8,
+        per_device_train_batch_size=TRAINING_KNOBS["per_device_train_batch_size"],
+        gradient_accumulation_steps=TRAINING_KNOBS["gradient_accumulation_steps"],
+        max_steps=TRAINING_KNOBS["max_steps"],
         fp16=True,
         logging_steps=100,
         save_strategy="epoch",
+        save_total_limit=1,
+        gradient_checkpointing=TRAINING_KNOBS["gradient_checkpointing"],
         report_to="none",
     )
     Trainer(model=model, args=args, train_dataset=ds).train()
-    model.save_pretrained(output_dir + "/final")
-    tokenizer.save_pretrained(output_dir + "/final")
-    print(f"Saved → {output_dir}/final")
+    model.save_pretrained(final_dir)
+    tokenizer.save_pretrained(final_dir)
+    print(f"Saved: {final_dir}")
 
 # ── Model A: SciQ ─────────────────────────────────────────────────────────────
 train_model(

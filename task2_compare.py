@@ -18,17 +18,20 @@ from transformers import GPT2Tokenizer
 from datasets import load_from_disk
 
 from lxt_patch import apply_gpt2_cplrp, get_relevance, load_lrp_model
+from training_config import base_model_path
 
 # Apply patches once before loading any model
 apply_gpt2_cplrp(verbose=True)
 
-tokenizer = GPT2Tokenizer.from_pretrained("/home/user/project/gpt2")
+BASE_MODEL = base_model_path()
+
+tokenizer = GPT2Tokenizer.from_pretrained(BASE_MODEL)
 tokenizer.pad_token = tokenizer.eos_token
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-model_pre  = load_lrp_model("/home/user/project/gpt2",        device)
+model_pre  = load_lrp_model(BASE_MODEL,                       device)
 model_post = load_lrp_model("aiaa4051/checkpoints/sft_final", device)
 
 dataset = load_from_disk("aiaa4051/data/squad_v2_dev200")

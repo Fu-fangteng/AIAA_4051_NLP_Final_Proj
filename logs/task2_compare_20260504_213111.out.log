@@ -1,0 +1,28 @@
+CP-LRP patches applied: GPT2MLP, LayerNorm, Dropout, GPT2Attention
+Using device: cuda
+Compared 5/20
+Compared 10/20
+Compared 15/20
+Compared 20/20
+Saved comparison data.
+Saved: aiaa4051/task2/comparison/compare_sample0.png
+Saved: aiaa4051/task2/comparison/compare_sample1.png
+Saved: aiaa4051/task2/comparison/compare_sample2.png
+Saved: aiaa4051/task2/comparison/compare_sample3.png
+Saved: aiaa4051/task2/comparison/compare_sample4.png
+Saved: aiaa4051/task2/comparison/compare_sample5.png
+Saved: aiaa4051/task2/comparison/compare_sample6.png
+Saved: aiaa4051/task2/comparison/compare_sample7.png
+Saved: aiaa4051/task2/comparison/compare_sample8.png
+Saved: aiaa4051/task2/comparison/compare_sample9.png
+Saved: aiaa4051/task2/comparison/compare_sample10.png
+Saved: aiaa4051/task2/comparison/compare_sample11.png
+Saved: aiaa4051/task2/comparison/compare_sample12.png
+Saved: aiaa4051/task2/comparison/compare_sample13.png
+Saved: aiaa4051/task2/comparison/compare_sample14.png
+Saved: aiaa4051/task2/comparison/compare_sample15.png
+Saved: aiaa4051/task2/comparison/compare_sample16.png
+Saved: aiaa4051/task2/comparison/compare_sample17.png
+Saved: aiaa4051/task2/comparison/compare_sample18.png
+Saved: aiaa4051/task2/comparison/compare_sample19.png
+Saved: aiaa4051/task2/comparison/mean_delta.png

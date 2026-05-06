@@ -1,15 +1,18 @@
 """
 Task 3-B: Per-Layer Parameter Relevance Comparison (Model A vs Model B)
-Computes an activation-magnitude proxy for each Transformer layer's MLP:
-    R_layer = |x_mean @ W|.sum()   (x_mean = mean over sequence positions)
+Two metrics are computed:
+    1) Logits ablation (preferred): zero-out one layer's output and
+         measure mean absolute logit drop.
+    2) Activation-magnitude proxy (legacy):
+         R_layer = |x_mean @ W|.sum()   (x_mean = mean over sequence positions)
 
 Each model is evaluated on test inputs that match its own training format:
-  - Model A (SciQ)    : "Question: ...\nAnswer:" (no Context prefix)
-  - Model B (SQuAD_v2): "Context: ...\nQuestion: ...\nAnswer:"
+    - Model A (SciQ)    : "Question: ...\nAnswer:" (no Context prefix)
+    - Model B (SQuAD_v2): "Context: ...\nQuestion: ...\nAnswer:"
 
 Requires:
-  - aiaa4051/task3/modelA/final   (from task3_train_models.py)
-  - aiaa4051/task3/modelB/final   (from task3_train_models.py)
+    - aiaa4051/task3/modelA/final   (from task3_train_models.py)
+    - aiaa4051/task3/modelB/final   (from task3_train_models.py)
 
 Run on Mac or GPU. Expected time: 20 min (CPU) / 5 min (GPU).
 """
@@ -17,11 +20,14 @@ Run on Mac or GPU. Expected time: 20 min (CPU) / 5 min (GPU).
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 from transformers import GPT2Tokenizer
 
 from lxt_patch import load_lrp_model
+from task3_relevance_utils import build_param_relevance_payload
+from training_config import base_model_path
 
-tokenizer = GPT2Tokenizer.from_pretrained("/home/user/project/gpt2")
+tokenizer = GPT2Tokenizer.from_pretrained(base_model_path())
 tokenizer.pad_token = tokenizer.eos_token
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -44,7 +50,7 @@ TEST_TEXTS_B = [
 
 # ── Per-layer parameter relevance ─────────────────────────────────────────────
 
-def compute_param_relevance(model_path, input_texts):
+def compute_param_relevance_proxy(model_path, input_texts):
     """
     Returns a numpy array of shape [n_layers] with the activation-magnitude
     proxy for each MLP c_fc layer, averaged over all input_texts.
@@ -79,8 +85,8 @@ def compute_param_relevance(model_path, input_texts):
             # GPT-2 Conv1D stores weight as (in_features, out_features) = (768, 3072)
             W = block.mlp.c_fc.weight.detach()   # [768, 3072]
             if idx in layer_inputs:
-                x      = layer_inputs[idx]        # [1, seq_len, 768]
-                x_mean = x.mean(dim=1)            # [1, 768]
+                x = layer_inputs[idx]            # [1, seq_len, 768]
+                x_mean = x.mean(dim=1)           # [1, 768]
                 R = (x_mean @ W).abs().sum().item()
             else:
                 R = 0.0
@@ -91,15 +97,69 @@ def compute_param_relevance(model_path, input_texts):
     return np.mean(all_per_layer, axis=0)
 
 
-print("Computing parameter relevance for Model A (SciQ)...")
-rel_A = compute_param_relevance("aiaa4051/task3/modelA/final", TEST_TEXTS_A)
+def compute_param_relevance_ablation(model_path, input_texts):
+    """
+    Returns a numpy array of shape [n_layers] with the mean absolute
+    logit drop caused by zeroing a single layer's output (one layer at a time).
 
-print("Computing parameter relevance for Model B (SQuAD_v2)...")
-rel_B = compute_param_relevance("aiaa4051/task3/modelB/final", TEST_TEXTS_B)
+    This is a direct output-based contribution estimate and is preferred
+    over the activation-magnitude proxy for fairness.
+    """
+    model = load_lrp_model(model_path, device)
+    n_layers = len(model.transformer.h)
+    all_per_layer = []
+
+    for input_text in input_texts:
+        input_ids = tokenizer(input_text, return_tensors="pt")["input_ids"].to(device)
+
+        with torch.no_grad():
+            base_logits = model(input_ids=input_ids, use_cache=False).logits
+
+        per_layer = []
+        for idx, block in enumerate(model.transformer.h):
+            def hook_fn(module, inp, out):
+                if isinstance(out, tuple):
+                    zeros = torch.zeros_like(out[0])
+                    return (zeros,) + out[1:]
+                return torch.zeros_like(out)
+
+            handle = block.register_forward_hook(hook_fn)
+            with torch.no_grad():
+                ablated_logits = model(input_ids=input_ids, use_cache=False).logits
+            handle.remove()
+
+            drop = (base_logits - ablated_logits).abs().mean().item()
+            per_layer.append(drop)
+
+        all_per_layer.append(per_layer)
+
+    return np.mean(all_per_layer, axis=0)
+
+
+print("Computing logits ablation relevance for Model A (SciQ)...")
+rel_A = compute_param_relevance_ablation("aiaa4051/task3/modelA/final", TEST_TEXTS_A)
+
+print("Computing logits ablation relevance for Model B (SQuAD_v2)...")
+rel_B = compute_param_relevance_ablation("aiaa4051/task3/modelB/final", TEST_TEXTS_B)
+
+# Optional legacy proxy for comparison/debugging
+print("Computing activation-magnitude proxy for Model A (SciQ)...")
+proxy_A = compute_param_relevance_proxy("aiaa4051/task3/modelA/final", TEST_TEXTS_A)
+
+print("Computing activation-magnitude proxy for Model B (SQuAD_v2)...")
+proxy_B = compute_param_relevance_proxy("aiaa4051/task3/modelB/final", TEST_TEXTS_B)
 
 # ── Normalize for fair comparison ─────────────────────────────────────────────
-rel_A_norm = rel_A / (rel_A.sum() + 1e-8)
-rel_B_norm = rel_B / (rel_B.sum() + 1e-8)
+payload = build_param_relevance_payload(rel_A, rel_B, TEST_TEXTS_A, TEST_TEXTS_B)
+payload["rel_A_proxy"] = proxy_A
+payload["rel_B_proxy"] = proxy_B
+payload["metric"] = "logits_ablation_mean_abs_drop"
+rel_A_norm = payload["rel_A_norm"]
+rel_B_norm = payload["rel_B_norm"]
+
+with open("aiaa4051/task3/comparison/param_relevance_data.pkl", "wb") as f:
+    pickle.dump(payload, f)
+print("Saved raw parameter relevance data to aiaa4051/task3/comparison/param_relevance_data.pkl")
 
 # ── Bar chart comparison ───────────────────────────────────────────────────────
 layers = np.arange(len(rel_A))
@@ -132,7 +192,7 @@ plt.savefig("aiaa4051/task3/comparison/param_relevance_comparison.png", dpi=150)
 print("Saved: aiaa4051/task3/comparison/param_relevance_comparison.png")
 
 # ── Difference plot ────────────────────────────────────────────────────────────
-diff = rel_A_norm - rel_B_norm
+diff = payload["diff_norm"]
 top3 = np.argsort(np.abs(diff))[::-1][:3]
 
 fig, ax = plt.subplots(figsize=(13, 3.5))
@@ -152,4 +212,4 @@ print("Saved: aiaa4051/task3/comparison/param_relevance_diff.png")
 print(f"\nTop 3 layers with largest difference: {top3.tolist()}")
 for l in top3:
     who = "Model A (SciQ)" if diff[l] > 0 else "Model B (SQuAD_v2)"
-    print(f"  Layer {l:2d}: Δ={diff[l]:+.4f}  → {who} relies more")
+    print(f"  Layer {l:2d}: delta={diff[l]:+.4f} -> {who} relies more")

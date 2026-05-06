@@ -1,0 +1,13 @@
+=== Step 1: Fine-tuning on SQuAD_v2 ===
+Step 1 final exists and loads; skipping Step 1: aiaa4051/checkpoints/step1_squad/final
+
+=== Step 2: Continue fine-tuning on SciQ ===
+{'loss': 4.1005, 'grad_norm': 18.88319969177246, 'learning_rate': 4.373333333333334e-05, 'epoch': 0.27}
+{'loss': 3.8486, 'grad_norm': 21.596721649169922, 'learning_rate': 3.706666666666667e-05, 'epoch': 0.53}
+{'loss': 3.6401, 'grad_norm': 24.232114791870117, 'learning_rate': 3.04e-05, 'epoch': 0.8}
+{'loss': 3.5067, 'grad_norm': 13.990935325622559, 'learning_rate': 2.3733333333333335e-05, 'epoch': 1.07}
+{'loss': 2.6618, 'grad_norm': 22.628225326538086, 'learning_rate': 1.7066666666666667e-05, 'epoch': 1.33}
+{'loss': 2.6488, 'grad_norm': 26.892580032348633, 'learning_rate': 1.04e-05, 'epoch': 1.6}
+{'loss': 2.6196, 'grad_norm': 20.04996109008789, 'learning_rate': 3.7333333333333337e-06, 'epoch': 1.87}
+{'train_runtime': 145.4146, 'train_samples_per_second': 41.261, 'train_steps_per_second': 5.158, 'train_loss': 3.24551708984375, 'epoch': 2.0}
+Sequential Fine-Tuning done: aiaa4051/checkpoints/sft_final

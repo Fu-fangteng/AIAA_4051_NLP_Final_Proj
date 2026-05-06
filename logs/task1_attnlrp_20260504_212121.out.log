@@ -1,0 +1,25 @@
+CP-LRP patches applied: GPT2MLP, LayerNorm, Dropout, GPT2Attention
+Using device: cuda
+Processed 1/200
+Processed 11/200
+Processed 21/200
+Processed 31/200
+Processed 41/200
+Processed 51/200
+Processed 61/200
+Processed 71/200
+Processed 81/200
+Processed 91/200
+Processed 101/200
+Processed 111/200
+Processed 121/200
+Processed 131/200
+Processed 141/200
+Processed 151/200
+Processed 161/200
+Processed 171/200
+Processed 181/200
+Processed 191/200
+Processed 200/200
+
+Done. Saved 200 records to aiaa4051/task1/relevance/relevances.pkl

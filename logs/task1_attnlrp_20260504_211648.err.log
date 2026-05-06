@@ -1,0 +1,10 @@
+2026-05-04 21:17:04.240928: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2026-05-04 21:17:06.715949: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+C:\Users\0610r\AppData\Local\Programs\Python\Python310\lib\site-packages\google\api_core\_python_version_support.py:275: FutureWarning: You are using a Python version (3.10.6) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2026-10-04). Please upgrade to the latest Python version, or at least Python 3.11, to continue receiving updates for google.api_core past that date.
+  warnings.warn(message, FutureWarning)
+Traceback (most recent call last):
+  File "C:\Users\0610r\cc\AIAA_4051_NLP_Final_Proj\task1_attnlrp.py", line 16, in <module>
+    from lxt_patch import apply_gpt2_cplrp, get_relevance, load_lrp_model
+  File "C:\Users\0610r\cc\AIAA_4051_NLP_Final_Proj\lxt_patch.py", line 14, in <module>
+    from lxt.efficient.patches import patch_method, layer_norm_forward, dropout_forward
+ModuleNotFoundError: No module named 'lxt'
