@@ -46,3 +46,17 @@ def apply_model_memory_settings(model):
     if gradient_checkpointing_enabled():
         model.gradient_checkpointing_enable()
     return model
+
+
+def get_device():
+    import torch
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+def load_tokenizer(model_path=None):
+    from transformers import GPT2Tokenizer
+    if model_path is None:
+        model_path = base_model_path()
+    tok = GPT2Tokenizer.from_pretrained(model_path)
+    tok.pad_token = tok.eos_token
+    return tok
