@@ -14,7 +14,7 @@ from transformers import GPT2Tokenizer
 from datasets import load_from_disk
 
 from lxt_patch import apply_gpt2_cplrp, get_relevance, load_lrp_model
-from training_config import base_model_path
+from training_config import base_model_path, get_device
 
 apply_gpt2_cplrp(verbose=True)
 
@@ -26,7 +26,7 @@ BASE_MODEL = base_model_path()
 tokenizer = GPT2Tokenizer.from_pretrained(BASE_MODEL)
 tokenizer.pad_token = tokenizer.eos_token
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = get_device()
 print(f"Using device: {device}")
 
 model = load_lrp_model(BASE_MODEL, device)
