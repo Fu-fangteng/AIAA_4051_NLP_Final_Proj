@@ -24,7 +24,7 @@ import pickle
 from transformers import GPT2Tokenizer
 
 from lxt_patch import load_lrp_model
-from task3_relevance_utils import build_param_relevance_payload
+from task3_visualization import build_param_relevance_payload
 from training_config import base_model_path
 
 tokenizer = GPT2Tokenizer.from_pretrained(base_model_path())

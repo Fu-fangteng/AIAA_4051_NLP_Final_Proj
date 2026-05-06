@@ -11,7 +11,34 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-from task3_relevance_utils import top_abs_difference_layers
+
+def build_param_relevance_payload(rel_a, rel_b, test_texts_a, test_texts_b):
+    rel_a = np.asarray(rel_a, dtype=float)
+    rel_b = np.asarray(rel_b, dtype=float)
+    if rel_a.shape != rel_b.shape:
+        raise ValueError("rel_a and rel_b must have the same shape")
+
+    rel_a_norm = rel_a / (rel_a.sum() + 1e-8)
+    rel_b_norm = rel_b / (rel_b.sum() + 1e-8)
+
+    return {
+        "rel_A": rel_a,
+        "rel_B": rel_b,
+        "rel_A_norm": rel_a_norm,
+        "rel_B_norm": rel_b_norm,
+        "diff_norm": rel_a_norm - rel_b_norm,
+        "layers": np.arange(len(rel_a)),
+        "test_texts_A": list(test_texts_a),
+        "test_texts_B": list(test_texts_b),
+        "model_A": "SciQ",
+        "model_B": "SQuAD_v2",
+        "metric": "activation_magnitude_proxy",
+    }
+
+
+def top_abs_difference_layers(diff, n=3):
+    diff = np.asarray(diff, dtype=float)
+    return np.argsort(np.abs(diff))[::-1][:n]
 
 
 ROOT = Path(__file__).resolve().parent
@@ -58,7 +85,7 @@ def render_bars_model_a(payload):
     ax.set_ylabel("Normalized relevance", fontsize=11.5, fontweight="500", color=TEXT)
     ax.set_xlabel("Transformer layer", fontsize=11.5, fontweight="500", color=TEXT)
     ax.set_title("Model A: SciQ Fine-tuned Model", fontsize=15, fontweight="bold", pad=20, color=TEXT, loc="left")
-    ax.text(0, 1.07, "Parameter importance distribution across layers", 
+    ax.text(0, 1.07, "Parameter importance distribution across layers",
             transform=ax.transAxes, fontsize=11, color=MUTED, style="italic")
 
     ax.set_xticks(layers)
@@ -88,7 +115,7 @@ def render_bars_model_b(payload):
     ax.set_ylabel("Normalized relevance", fontsize=11.5, fontweight="500", color=TEXT)
     ax.set_xlabel("Transformer layer", fontsize=11.5, fontweight="500", color=TEXT)
     ax.set_title("Model B: SQuAD_v2 Fine-tuned Model", fontsize=15, fontweight="bold", pad=20, color=TEXT, loc="left")
-    ax.text(0, 1.07, "Parameter importance distribution across layers", 
+    ax.text(0, 1.07, "Parameter importance distribution across layers",
             transform=ax.transAxes, fontsize=11, color=MUTED, style="italic")
 
     ax.set_xticks(layers)
@@ -122,7 +149,7 @@ def render_bars_difference(payload):
     ax.set_ylabel("Difference in relevance (SciQ - SQuAD_v2)", fontsize=11.5, fontweight="500", color=TEXT)
     ax.set_xlabel("Transformer layer", fontsize=11.5, fontweight="500", color=TEXT)
     ax.set_title("Model Comparison: Which Layers Shift?", fontsize=15, fontweight="bold", pad=20, color=TEXT, loc="left")
-    ax.text(0, 1.07, "Green: SciQ dominates  |  Red: SQuAD_v2 dominates", 
+    ax.text(0, 1.07, "Green: SciQ dominates  |  Red: SQuAD_v2 dominates",
             transform=ax.transAxes, fontsize=11, color=MUTED)
 
     ax.set_xticks(layers)
@@ -200,13 +227,13 @@ def render_comparison_diverging(payload):
     ax.set_facecolor("white")
 
     y_pos = np.arange(len(layers))
-    
+
     # SciQ bars go left (negative)
-    ax.barh(y_pos, -rel_a, height=0.65, label="Model A: SciQ", 
+    ax.barh(y_pos, -rel_a, height=0.65, label="Model A: SciQ",
             color=COLOR_A, edgecolor="none", alpha=0.88)
-    
+
     # SQuAD bars go right (positive)
-    ax.barh(y_pos, rel_b, height=0.65, label="Model B: SQuAD_v2", 
+    ax.barh(y_pos, rel_b, height=0.65, label="Model B: SQuAD_v2",
             color=COLOR_B, edgecolor="none", alpha=0.88)
 
     # Center line
@@ -216,7 +243,7 @@ def render_comparison_diverging(payload):
     ax.set_yticklabels([f"Layer {int(x)}" for x in layers], fontsize=10.5)
     ax.set_xlabel("Normalized parameter relevance", fontsize=12, fontweight="500", color=TEXT)
     ax.set_title("Plan A: Model Comparison - Diverging View", fontsize=15, fontweight="bold", pad=22, color=TEXT, loc="left")
-    ax.text(0, 1.05, "SciQ (left) vs SQuAD_v2 (right) - wider bar = higher importance", 
+    ax.text(0, 1.05, "SciQ (left) vs SQuAD_v2 (right) - wider bar = higher importance",
             transform=ax.transAxes, fontsize=11, color=MUTED, style="italic")
 
     ax.legend(loc="lower right", frameon=False, fontsize=11, labelspacing=1.2)
@@ -244,9 +271,9 @@ def render_comparison_grouped(payload):
     width = 0.38
 
     # Bars with gradient-like effect (slight shadow)
-    bars1 = ax.bar(x - width/2, rel_a, width, label="Model A: SciQ", 
+    bars1 = ax.bar(x - width/2, rel_a, width, label="Model A: SciQ",
                    color=COLOR_A, edgecolor="none", alpha=0.88)
-    bars2 = ax.bar(x + width/2, rel_b, width, label="Model B: SQuAD_v2", 
+    bars2 = ax.bar(x + width/2, rel_b, width, label="Model B: SQuAD_v2",
                    color=COLOR_B, edgecolor="none", alpha=0.88)
 
     # Add subtle value labels on top of bars (for highest values)
@@ -254,16 +281,16 @@ def render_comparison_grouped(payload):
         max_val = max(v1, v2)
         if max_val > np.percentile([rel_a, rel_b], 75):  # Only top 25%
             if v1 > v2:
-                ax.text(i - width/2, v1 + 0.005, f"{v1:.2f}", 
+                ax.text(i - width/2, v1 + 0.005, f"{v1:.2f}",
                        ha="center", va="bottom", fontsize=8.5, color=COLOR_A, fontweight="500")
             else:
-                ax.text(i + width/2, v2 + 0.005, f"{v2:.2f}", 
+                ax.text(i + width/2, v2 + 0.005, f"{v2:.2f}",
                        ha="center", va="bottom", fontsize=8.5, color=COLOR_B, fontweight="500")
 
     ax.set_ylabel("Normalized parameter relevance", fontsize=12, fontweight="500", color=TEXT)
     ax.set_xlabel("Transformer layer", fontsize=12, fontweight="500", color=TEXT)
     ax.set_title("Plan B: Model Comparison - Grouped View", fontsize=15, fontweight="bold", pad=22, color=TEXT, loc="left")
-    ax.text(0, 1.05, "Side-by-side comparison - direct value inspection", 
+    ax.text(0, 1.05, "Side-by-side comparison - direct value inspection",
             transform=ax.transAxes, fontsize=11, color=MUTED, style="italic")
 
     ax.set_xticks(x)

@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from task3_relevance_utils import build_param_relevance_payload, top_abs_difference_layers
+from task3_visualization import build_param_relevance_payload, top_abs_difference_layers
 
 
 class Task3RelevanceUtilsTests(unittest.TestCase):
