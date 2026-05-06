@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from task2_poster_utils import aggregate_question_words
+from task2_visualization import aggregate_question_words
 
 
 class Task2PosterUtilsTests(unittest.TestCase):
