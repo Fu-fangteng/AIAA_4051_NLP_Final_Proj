@@ -1,18 +1,6 @@
 import numpy as np
 
 
-def build_cumulative_mask_inputs(tokens, sorted_idx, mask_token_id):
-    if len(sorted_idx) != len(tokens):
-        raise ValueError("sorted_idx must contain exactly one index per token")
-
-    masked_tokens = list(tokens)
-    masked_inputs = [masked_tokens.copy()]
-    for idx in sorted_idx:
-        masked_tokens[idx] = mask_token_id
-        masked_inputs.append(masked_tokens.copy())
-    return masked_inputs
-
-
 def build_cumulative_attention_masks(seq_len, sorted_idx):
     if len(sorted_idx) != seq_len:
         raise ValueError("sorted_idx must contain exactly one index per token")

@@ -2,7 +2,6 @@ import unittest
 
 from faithfulness_utils import (
     build_cumulative_attention_masks,
-    build_cumulative_mask_inputs,
     least_relevant_first_order,
     mask_percent_axis,
     relevance_first_order,
@@ -10,19 +9,6 @@ from faithfulness_utils import (
 
 
 class FaithfulnessUtilsTests(unittest.TestCase):
-    def test_cumulative_mask_inputs_start_with_unmasked_tokens(self):
-        tokens = [10, 20, 30]
-        masked = build_cumulative_mask_inputs(tokens, [2, 0, 1], mask_token_id=99)
-
-        self.assertEqual(masked[0], [10, 20, 30])
-        self.assertEqual(masked[1], [10, 20, 99])
-        self.assertEqual(masked[2], [99, 20, 99])
-        self.assertEqual(masked[3], [99, 99, 99])
-
-    def test_cumulative_mask_inputs_validate_order_length(self):
-        with self.assertRaises(ValueError):
-            build_cumulative_mask_inputs([10, 20, 30], [0, 1], mask_token_id=99)
-
     def test_cumulative_attention_masks_start_fully_visible_then_delete_tokens(self):
         masks = build_cumulative_attention_masks(3, [2, 0, 1])
 
