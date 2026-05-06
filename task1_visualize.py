@@ -6,7 +6,6 @@ Run locally on Mac. Expected time: ~5 min.
 
 import pickle
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import matplotlib.colors as mcolors
 import numpy as np
 
