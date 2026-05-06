@@ -17,7 +17,7 @@ import numpy as np
 from datasets import load_from_disk
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_SAMPLE_IDX = 3
 OUT_DIR = ROOT / "aiaa4051" / "task2" / "comparison"
 COMPARISON_PATH = OUT_DIR / "comparison.pkl"

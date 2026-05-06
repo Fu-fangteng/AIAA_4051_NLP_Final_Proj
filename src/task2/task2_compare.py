@@ -9,6 +9,10 @@ Requires:
   - lxt_patch.py                         (shared CP-LRP helper)
 """
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import pickle
 import torch
 import numpy as np

@@ -11,6 +11,10 @@ Deletion is implemented with attention_mask=0, so the original token ids are
 not replaced by GPT-2's EOS token.
 """
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import pickle
 import torch
 import numpy as np

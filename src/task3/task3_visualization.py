@@ -41,7 +41,7 @@ def top_abs_difference_layers(diff, n=3):
     return np.argsort(np.abs(diff))[::-1][:n]
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 OUT_DIR = ROOT / "aiaa4051" / "task3" / "comparison"
 DATA_PATH = OUT_DIR / "param_relevance_data.pkl"
 

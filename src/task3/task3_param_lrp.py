@@ -17,6 +17,10 @@ Requires:
 Run on Mac or GPU. Expected time: 20 min (CPU) / 5 min (GPU).
 """
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import torch
 import numpy as np
 import matplotlib.pyplot as plt

@@ -8,6 +8,10 @@ Uses CP-LRP variant (stops gradient at Q and K in softmax).
 Patches are applied via the shared lxt_patch.py helper.
 """
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import torch
 import pickle
 from transformers import GPT2Tokenizer

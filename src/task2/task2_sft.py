@@ -7,6 +7,10 @@ Saves final checkpoint to aiaa4051/checkpoints/sft_final
 Must run on GPU. Expected time: 4-8 h on RTX 4090.
 """
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from transformers import GPT2LMHeadModel, TrainingArguments, Trainer
 from datasets import load_from_disk
 

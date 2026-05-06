@@ -5,6 +5,10 @@ Must run on GPU. Expected time: ~2-4 h per model (RTX 4090).
 Tip: run together with task2_sft.py in one GPU session to save time.
 """
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from transformers import GPT2LMHeadModel, TrainingArguments, Trainer
 from datasets import load_from_disk
 
