@@ -3,7 +3,21 @@
     "allow": [
       "Bash(python generate_poster.py)",
       "mcp__Claude_in_Chrome__tabs_context_mcp",
-      "mcp__Claude_in_Chrome__navigate"
+      "mcp__Claude_in_Chrome__navigate",
+      "Bash(python -c \"from training_config import get_device, load_tokenizer; print\\('OK'\\)\")",
+      "Bash(git -C \"C:/Users/0610r/cc/AIAA_4051_NLP_Final_Proj\" add training_config.py)",
+      "Bash(git -C \"C:/Users/0610r/cc/AIAA_4051_NLP_Final_Proj\" commit -m \"feat: add get_device\\(\\) and load_tokenizer\\(\\) helpers to training_config\")",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('task2_sft.py'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
+      "Bash(python -m pytest tests/ -v)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('task3_train_models.py'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
+      "Bash(pytest tests/ -v)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('benchmark_train_speed.py'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('task2_render_poster.py'\\).read\\(\\)\\); print\\('task2 OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('task3_render_poster.py'\\).read\\(\\)\\); print\\('task3 OK'\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(grep -n 'torch.device\\(\\\\\"cuda\\\\\"' task1_attnlrp.py task2_compare.py task2_sft.py task3_train_models.py benchmark_train_speed.py)"
     ]
   }
 }
