@@ -5,57 +5,25 @@ Must run on GPU. Expected time: ~2-4 h per model (RTX 4090).
 Tip: run together with task2_sft.py in one GPU session to save time.
 """
 
-from transformers import GPT2LMHeadModel, GPT2Tokenizer, TrainingArguments, Trainer
+from transformers import GPT2LMHeadModel, TrainingArguments, Trainer
 from datasets import load_from_disk
 
 from training_config import (
     apply_model_memory_settings,
     base_model_path,
+    load_tokenizer,
     model_dir_is_loadable,
     training_knobs,
 )
+from tokenization_utils import make_sciq_tokenizer, make_squad_tokenizer
 
 
 BASE_MODEL = base_model_path()
 TRAINING_KNOBS = training_knobs()
 
-tokenizer = GPT2Tokenizer.from_pretrained(BASE_MODEL)
-tokenizer.pad_token = tokenizer.eos_token
-
-# ── Tokenisation helpers ──────────────────────────────────────────────────────
-
-def tok_sciq(example):
-    prompt    = f"Question: {example['question']}\nAnswer:"
-    full_text = prompt + f" {example['correct_answer']}"
-    enc = tokenizer(full_text, truncation=True, max_length=128, padding="max_length")
-
-    prompt_len = len(tokenizer(prompt, add_special_tokens=False)["input_ids"])
-    labels = enc["input_ids"].copy()
-    labels[:prompt_len] = [-100] * prompt_len
-    for i, mask in enumerate(enc["attention_mask"]):
-        if mask == 0:
-            labels[i] = -100
-    enc["labels"] = labels
-    return enc
-
-
-def tok_squad(example):
-    ans = example["answers"]["text"]
-    answer_str = ans[0] if ans else "unanswerable"
-    prompt = (f"Context: {example['context'][:300]}\n"
-              f"Question: {example['question']}\n"
-              f"Answer:")
-    full_text = prompt + f" {answer_str}"
-    enc = tokenizer(full_text, truncation=True, max_length=256, padding="max_length")
-
-    prompt_len = len(tokenizer(prompt, add_special_tokens=False)["input_ids"])
-    labels = enc["input_ids"].copy()
-    labels[:prompt_len] = [-100] * prompt_len
-    for i, mask in enumerate(enc["attention_mask"]):
-        if mask == 0:
-            labels[i] = -100
-    enc["labels"] = labels
-    return enc
+tokenizer = load_tokenizer(BASE_MODEL)
+tok_sciq = make_sciq_tokenizer(tokenizer)
+tok_squad = make_squad_tokenizer(tokenizer)
 
 # ── Generic trainer ───────────────────────────────────────────────────────────
 
