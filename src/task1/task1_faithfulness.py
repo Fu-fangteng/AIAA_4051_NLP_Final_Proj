@@ -1,7 +1,10 @@
 """
 Task 1-D: Faithfulness Evaluation via token deletion.
 
-Three curves are plotted:
+Computes three deletion-order curves and saves results to
+`aiaa4051/task1/faithfulness/faithfulness_data.pkl`.
+Run task1_visualization.py afterwards to render the figure.
+
   - AttnLRP order        : delete tokens by descending signed relevance
   - Random baseline      : delete tokens in random order
   - Low relevance first  : delete tokens by smallest absolute relevance first
@@ -18,20 +21,46 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import pickle
 import torch
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
-
-from faithfulness_utils import (
-    build_cumulative_attention_masks,
-    least_relevant_first_order,
-    mask_percent_axis,
-    relevance_first_order,
-)
 from training_config import base_model_path, int_env
 
-# np.trapezoid was introduced in NumPy 2.0; fall back to np.trapz on older versions
 _trapz = np.trapezoid if hasattr(np, "trapezoid") else np.trapz
+
+
+def build_cumulative_attention_masks(seq_len, sorted_idx):
+    if len(sorted_idx) != seq_len:
+        raise ValueError("sorted_idx must contain exactly one index per token")
+
+    attention_mask = [1] * seq_len
+    masks = [attention_mask.copy()]
+    for idx in sorted_idx:
+        attention_mask[idx] = 0
+        masks.append(attention_mask.copy())
+    return masks
+
+
+def mask_percent_axis(num_tokens):
+    return np.linspace(0, 100, num_tokens + 1)
+
+
+def relevance_first_order(scores):
+    scores = np.asarray(scores)
+    return np.argsort(scores)[::-1].tolist()
+
+
+def least_relevant_first_order(scores):
+    scores = np.asarray(scores)
+    return np.argsort(np.abs(scores)).tolist()
+
+
+def pad_curve(curves, length):
+    padded = []
+    for c in curves:
+        if len(c) < length:
+            c = c + [c[-1]] * (length - len(c))
+        padded.append(c[:length])
+    return np.array(padded)
+
 
 BASE_MODEL = base_model_path()
 FAITHFULNESS_BATCH_SIZE = int_env("FAITHFULNESS_BATCH_SIZE", 32)
@@ -133,18 +162,7 @@ for i, sample in enumerate(data):
     if (i + 1) % 10 == 0:
         print(f"Evaluated {i+1}/{len(data)} samples")
 
-# Pad all curves to the same length for averaging
 max_len = max(len(c) for c in attnlrp_curves)
-
-
-def pad_curve(curves, length):
-    padded = []
-    for c in curves:
-        if len(c) < length:
-            c = c + [c[-1]] * (length - len(c))
-        padded.append(c[:length])
-    return np.array(padded)
-
 
 attnlrp_arr = pad_curve(attnlrp_curves, max_len)
 random_arr  = pad_curve(random_curves,  max_len)
@@ -159,102 +177,12 @@ auc_attnlrp = _trapz(mean_attnlrp, x) / 100
 auc_random  = _trapz(mean_random, x)  / 100
 auc_worst   = _trapz(mean_worst, x)   / 100
 
-
-def _mean_and_sem(curves):
-    mean = curves.mean(axis=0)
-    if len(curves) <= 1:
-        return mean, np.zeros_like(mean)
-    sem = curves.std(axis=0, ddof=1) / np.sqrt(len(curves))
-    return mean, sem
-
-
-def _plot_curve(ax, x_axis, curves, label, color, linestyle, auc, zorder):
-    mean, sem = _mean_and_sem(curves)
-    ax.plot(
-        x_axis,
-        mean,
-        label=f"{label}  AUC={auc:.3f}",
-        color=color,
-        linewidth=2.45,
-        linestyle=linestyle,
-        zorder=zorder,
-    )
-    ax.fill_between(
-        x_axis,
-        np.maximum(mean - sem, 0),
-        mean + sem,
-        color=color,
-        alpha=0.11,
-        linewidth=0,
-        zorder=zorder - 1,
-    )
-
-
-plt.rcParams.update({
-    "font.family": "DejaVu Sans",
-    "axes.edgecolor": "#D1D5DB",
-    "axes.labelcolor": "#111827",
-    "axes.titlecolor": "#111827",
-    "xtick.color": "#374151",
-    "ytick.color": "#374151",
-    "figure.facecolor": "white",
-    "axes.facecolor": "white",
-})
-
-fig, ax = plt.subplots(figsize=(9.6, 5.35), dpi=150)
-_plot_curve(ax, x, worst_arr, "Low relevance first", "#F97316", (0, (1.5, 2.0)), auc_worst, 2)
-_plot_curve(ax, x, random_arr, "Random", "#6B7280", "--", auc_random, 4)
-_plot_curve(ax, x, attnlrp_arr, "AttnLRP", "#2563EB", "-", auc_attnlrp, 6)
-
-ax.set_title(
-    "Faithfulness Evaluation: Token Deletion",
-    fontsize=15.5,
-    fontweight="semibold",
-    loc="left",
-    pad=17,
-)
-ax.text(
-    0.0,
-    1.015,
-    f"Lower AUC = faster confidence drop   |   N = {len(attnlrp_arr)}   |   deletion uses attention_mask=0",
-    transform=ax.transAxes,
-    fontsize=9.7,
-    color="#4B5563",
-)
-ax.set_xlabel("Tokens deleted (%)", fontsize=10.8, labelpad=9)
-ax.set_ylabel("Confidence in original predicted token", fontsize=10.8, labelpad=9)
-ax.yaxis.set_major_formatter(mticker.FormatStrFormatter("%.2f"))
-ax.set_xlim(0, 100)
-ax.set_ylim(bottom=0)
-ax.grid(axis="y", color="#E5E7EB", linewidth=1.0)
-ax.grid(axis="x", color="#F3F4F6", linewidth=0.8)
-ax.spines["top"].set_visible(False)
-ax.spines["right"].set_visible(False)
-ax.tick_params(axis="both", labelsize=9.8)
-ax.legend(
-    loc="upper right",
-    frameon=True,
-    framealpha=0.96,
-    facecolor="white",
-    edgecolor="#E5E7EB",
-    fontsize=9.4,
-    handlelength=3.2,
-    borderpad=0.8,
-)
-fig.tight_layout()
-fig.savefig("aiaa4051/task1/faithfulness/faithfulness_curve.png", dpi=300, bbox_inches="tight")
-fig.savefig("aiaa4051/task1/faithfulness/faithfulness_curve.pdf", bbox_inches="tight")
-plt.close(fig)
-print("Saved: aiaa4051/task1/faithfulness/faithfulness_curve.png")
-print("Saved: aiaa4051/task1/faithfulness/faithfulness_curve.pdf")
-
 print(f"\nNormalized AUC:")
 print(f"  AttnLRP (relevance order) : {auc_attnlrp:.4f}")
 print(f"  Random baseline           : {auc_random:.4f}")
 print(f"  Least relevant baseline   : {auc_worst:.4f}")
 print("(Lower AUC = faster confidence drop = more faithful explanation)")
 
-# Save curves for later analysis
 with open("aiaa4051/task1/faithfulness/faithfulness_data.pkl", "wb") as f:
     pickle.dump({
         "attnlrp":      attnlrp_arr,
@@ -271,4 +199,4 @@ with open("aiaa4051/task1/faithfulness/faithfulness_data.pkl", "wb") as f:
         },
         "deletion_method": "attention_mask=0",
     }, f)
-print("Saved raw curve data to aiaa4051/task1/faithfulness/faithfulness_data.pkl")
+print("Saved: aiaa4051/task1/faithfulness/faithfulness_data.pkl")

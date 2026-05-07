@@ -17,7 +17,13 @@
       "Bash(python -c \"import ast; ast.parse\\(open\\('task2_render_poster.py'\\).read\\(\\)\\); print\\('task2 OK'\\)\")",
       "Bash(python -c \"import ast; ast.parse\\(open\\('task3_render_poster.py'\\).read\\(\\)\\); print\\('task3 OK'\\)\")",
       "Bash(python -c ' *)",
-      "Bash(grep -n 'torch.device\\(\\\\\"cuda\\\\\"' task1_attnlrp.py task2_compare.py task2_sft.py task3_train_models.py benchmark_train_speed.py)"
+      "Bash(grep -n 'torch.device\\(\\\\\"cuda\\\\\"' task1_attnlrp.py task2_compare.py task2_sft.py task3_train_models.py benchmark_train_speed.py)",
+      "Bash(git checkout *)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('task3_visualization.py'\\).read\\(\\)\\); print\\('task3_visualization.py: OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('task3_param_lrp.py'\\).read\\(\\)\\); print\\('task3_param_lrp.py: OK'\\)\")",
+      "Bash(git -C /c/Users/0610r/cc/AIAA_4051_NLP_Final_Proj add task3_visualization.py task3_param_lrp.py task3_render_poster.py task3_relevance_utils.py tests/test_task3_relevance_utils.py)",
+      "Bash(git -C /c/Users/0610r/cc/AIAA_4051_NLP_Final_Proj commit -m \"refactor: merge task3_relevance_utils + task3_render_poster into task3_visualization\")",
+      "Bash(git mv *)"
     ]
   }
 }

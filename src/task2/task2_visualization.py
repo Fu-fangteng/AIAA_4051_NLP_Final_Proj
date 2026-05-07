@@ -139,10 +139,10 @@ def _set_style():
         "font.family": "DejaVu Sans",
         "figure.facecolor": "white",
         "axes.facecolor": "white",
-        "axes.edgecolor": "#E5E7EB",
-        "axes.labelcolor": "#111827",
-        "xtick.color": "#111827",
-        "ytick.color": "#111827",
+        "axes.edgecolor": "#D9D0C8",
+        "axes.labelcolor": "#2C2420",
+        "xtick.color": "#2C2420",
+        "ytick.color": "#2C2420",
     })
 
 
@@ -158,11 +158,11 @@ def render_question_heatmap(
 ):
     _set_style()
 
-    fig = plt.figure(figsize=(10.8, 5.8), dpi=160)
+    fig = plt.figure(figsize=(10.8, 5.2), dpi=160)
     gs = fig.add_gridspec(
-        nrows=4,
+        nrows=3,
         ncols=1,
-        height_ratios=[0.92, 1.0, 0.48, 0.42],
+        height_ratios=[0.92, 1.0, 0.48],
         hspace=0.32,
     )
 
@@ -174,7 +174,7 @@ def render_question_heatmap(
         "Fine-Tuning Changes Question-Word Importance",
         fontsize=18,
         fontweight="semibold",
-        color="#111827",
+        color="#212529",
         va="top",
     )
     title_ax.text(
@@ -182,15 +182,15 @@ def render_question_heatmap(
         0.48,
         f'Question: "{question}"',
         fontsize=12.5,
-        color="#111827",
+        color="#212529",
         va="top",
     )
     title_ax.text(
         0,
         0.13,
-        f"Context excerpt: {context}",
+        f"Context: {context}",
         fontsize=9.8,
-        color="#4B5563",
+        color="#6C757D",
         va="top",
     )
 
@@ -198,7 +198,7 @@ def render_question_heatmap(
     vmax_importance = max(float(np.max(importance)), 1e-8)
     imp_ax = fig.add_subplot(gs[1, 0])
     imp_norm = mcolors.Normalize(vmin=0, vmax=vmax_importance)
-    imp_ax.imshow(importance, cmap="YlGnBu", norm=imp_norm, aspect="auto")
+    imp_ax.imshow(importance, cmap="Blues", norm=imp_norm, aspect="auto")
     _style_heatmap_axis(imp_ax, words, ["Pre-FT", "Post-FT"], show_words=True)
     _annotate_cells(imp_ax, importance, imp_norm, "{:.1f}")
 
@@ -207,32 +207,12 @@ def render_question_heatmap(
     delta_norm = mcolors.TwoSlopeNorm(vmin=-vmax_delta, vcenter=0, vmax=vmax_delta)
     delta_ax.imshow(
         delta_importance[np.newaxis, :],
-        cmap="RdBu",
+        cmap="RdBu_r",
         norm=delta_norm,
         aspect="auto",
     )
-    _style_heatmap_axis(delta_ax, words, ["Post - Pre"], show_words=False)
+    _style_heatmap_axis(delta_ax, words, ["Δ Importance"], show_words=False)
     _annotate_cells(delta_ax, delta_importance[np.newaxis, :], delta_norm, "{:+.1f}")
-
-    note_ax = fig.add_subplot(gs[3, :])
-    note_ax.axis("off")
-    note_ax.text(
-        0,
-        0.72,
-        "GPT-2 subword relevance scores are summed into word-level values. "
-        "Top rows: darker blue-green = stronger |AttnLRP|. Bottom row: blue = increased importance, red = decreased.",
-        fontsize=9.2,
-        color="#4B5563",
-        va="center",
-    )
-    note_ax.text(
-        0,
-        0.18,
-        f"Sample {sample_idx}; render-only from cached comparison.pkl",
-        fontsize=8.5,
-        color="#6B7280",
-        va="center",
-    )
 
     fig.savefig(f"{out_base}.png", dpi=300, bbox_inches="tight")
     fig.savefig(f"{out_base}.pdf", bbox_inches="tight")
