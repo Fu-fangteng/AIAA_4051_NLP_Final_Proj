@@ -11,8 +11,11 @@ import re
 import string
 from pathlib import Path
 
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 import numpy as np
 from datasets import load_from_disk
 
@@ -137,6 +140,9 @@ def main():
 def _set_style():
     plt.rcParams.update({
         "font.family": "DejaVu Sans",
+        "pdf.fonttype": 42,
+        "ps.fonttype": 42,
+        "svg.fonttype": "none",
         "figure.facecolor": "white",
         "axes.facecolor": "white",
         "axes.edgecolor": "#D9D0C8",
@@ -198,27 +204,43 @@ def render_question_heatmap(
     vmax_importance = max(float(np.max(importance)), 1e-8)
     imp_ax = fig.add_subplot(gs[1, 0])
     imp_norm = mcolors.Normalize(vmin=0, vmax=vmax_importance)
-    imp_ax.imshow(importance, cmap="Blues", norm=imp_norm, aspect="auto")
+    _draw_heatmap_cells(imp_ax, importance, plt.get_cmap("Blues"), imp_norm)
     _style_heatmap_axis(imp_ax, words, ["Pre-FT", "Post-FT"], show_words=True)
-    _annotate_cells(imp_ax, importance, imp_norm, "{:.1f}")
+    _annotate_cells(imp_ax, importance, plt.get_cmap("Blues"), imp_norm, "{:.1f}")
 
     delta_ax = fig.add_subplot(gs[2, 0])
     vmax_delta = max(float(np.max(np.abs(delta_importance))), 1e-8)
     delta_norm = mcolors.TwoSlopeNorm(vmin=-vmax_delta, vcenter=0, vmax=vmax_delta)
-    delta_ax.imshow(
-        delta_importance[np.newaxis, :],
-        cmap="RdBu_r",
-        norm=delta_norm,
-        aspect="auto",
-    )
+    _draw_heatmap_cells(delta_ax, delta_importance[np.newaxis, :], plt.get_cmap("RdBu_r"), delta_norm)
     _style_heatmap_axis(delta_ax, words, ["Δ Importance"], show_words=False)
-    _annotate_cells(delta_ax, delta_importance[np.newaxis, :], delta_norm, "{:+.1f}")
+    _annotate_cells(delta_ax, delta_importance[np.newaxis, :], plt.get_cmap("RdBu_r"), delta_norm, "{:+.1f}")
 
     fig.savefig(f"{out_base}.png", dpi=300, bbox_inches="tight")
     fig.savefig(f"{out_base}.pdf", bbox_inches="tight")
+    fig.savefig(f"{out_base}.svg", bbox_inches="tight")
     plt.close(fig)
     print(f"Saved: {out_base}.png")
     print(f"Saved: {out_base}.pdf")
+    print(f"Saved: {out_base}.svg")
+
+
+def _draw_heatmap_cells(ax, values, cmap, norm):
+    rows, cols = values.shape
+    for row in range(rows):
+        for col in range(cols):
+            ax.add_patch(
+                Rectangle(
+                    (col - 0.5, row - 0.5),
+                    1,
+                    1,
+                    facecolor=cmap(norm(float(values[row, col]))),
+                    edgecolor="white",
+                    linewidth=2.4,
+                )
+            )
+    ax.set_xlim(-0.5, cols - 0.5)
+    ax.set_ylim(rows - 0.5, -0.5)
+    ax.set_aspect("auto")
 
 
 def _style_heatmap_axis(ax, words, row_labels, show_words):
@@ -241,11 +263,11 @@ def _style_heatmap_axis(ax, words, row_labels, show_words):
     ax.tick_params(which="minor", bottom=False, left=False)
 
 
-def _annotate_cells(ax, values, norm, fmt):
+def _annotate_cells(ax, values, cmap, norm, fmt):
     for row in range(values.shape[0]):
         for col in range(values.shape[1]):
             val = float(values[row, col])
-            rgba = ax.images[0].cmap(norm(val))
+            rgba = cmap(norm(val))
             luminance = 0.2126 * rgba[0] + 0.7152 * rgba[1] + 0.0722 * rgba[2]
             color = "white" if luminance < 0.45 else "#111827"
             ax.text(col, row, fmt.format(val), ha="center", va="center", fontsize=10, color=color)

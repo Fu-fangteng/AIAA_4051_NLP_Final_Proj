@@ -8,6 +8,8 @@ This script is render-only: it reads
 import pickle
 from pathlib import Path
 
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -179,6 +181,9 @@ def _add_top_layer_note(ax, payload, y=0.9):
 def _set_style():
     plt.rcParams.update({
         "font.family": "DejaVu Sans",
+        "pdf.fonttype": 42,
+        "ps.fonttype": 42,
+        "svg.fonttype": "none",
         "figure.facecolor": BG,
         "axes.facecolor": "white",
         "axes.edgecolor": "none",
@@ -201,11 +206,17 @@ def _clean_axis(ax):
 
 
 def _save(fig, name):
-    """Save figure as PNG only."""
+    """Save figure in raster and vector print formats."""
     png_path = OUT_DIR / f"{name}.png"
+    pdf_path = OUT_DIR / f"{name}.pdf"
+    svg_path = OUT_DIR / f"{name}.svg"
     fig.savefig(png_path, dpi=300, bbox_inches="tight", facecolor=BG)
+    fig.savefig(pdf_path, bbox_inches="tight", facecolor=BG)
+    fig.savefig(svg_path, bbox_inches="tight", facecolor=BG)
     plt.close(fig)
-    print(f"✓ {name}.png")
+    print(f"Saved: {png_path}")
+    print(f"Saved: {pdf_path}")
+    print(f"Saved: {svg_path}")
 
 
 def render_comparison_diverging(payload):

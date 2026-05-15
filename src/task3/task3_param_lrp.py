@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import pickle
 import numpy as np
 import torch
+from datasets import load_dataset
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 from lxt_patch import apply_gpt2_cplrp
@@ -38,18 +39,34 @@ tokenizer.pad_token = tokenizer.eos_token
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-# Model-appropriate test inputs
-TEST_TEXTS_A = [
-    "Question: What is water made of?\nAnswer:",
-    "Question: What is the sun?\nAnswer:",
-    "Question: How do plants make food?\nAnswer:",
-]
+N_SAMPLES = 1000
 
-TEST_TEXTS_B = [
-    "Context: Water is a chemical compound of hydrogen and oxygen.\nQuestion: What is water?\nAnswer:",
-    "Context: The sun is a star at the center of the solar system.\nQuestion: What is the sun?\nAnswer:",
-    "Context: Photosynthesis is the process by which plants make food.\nQuestion: How do plants make food?\nAnswer:",
-]
+
+def load_sciq_test_texts(n=N_SAMPLES):
+    """Load SciQ test set, format as bare Question/Answer prompts."""
+    ds = load_dataset("sciq", split="test")
+    texts = []
+    for item in ds:
+        q = item["question"].strip()
+        texts.append(f"Question: {q}\nAnswer:")
+        if len(texts) >= n:
+            break
+    print(f"Loaded {len(texts)} SciQ test inputs")
+    return texts
+
+
+def load_squad_val_texts(n=N_SAMPLES):
+    """Load SQuAD_v2 validation set (first n), format as Context/Question/Answer prompts."""
+    ds = load_dataset("rajpurkar/squad_v2", split="validation")
+    texts = []
+    for item in ds:
+        ctx = item["context"][:300].strip()
+        q = item["question"].strip()
+        texts.append(f"Context: {ctx}\nQuestion: {q}\nAnswer:")
+        if len(texts) >= n:
+            break
+    print(f"Loaded {len(texts)} SQuAD_v2 validation inputs")
+    return texts
 
 
 def _load_model(model_path):
@@ -69,8 +86,11 @@ def compute_param_relevance_attnlrp(model_path, input_texts):
     """
     model = _load_model(model_path)
     all_per_layer = []
+    total = len(input_texts)
 
-    for input_text in input_texts:
+    for idx, input_text in enumerate(input_texts):
+        if (idx + 1) % 100 == 0 or idx == 0:
+            print(f"  [{idx+1}/{total}]")
         model.zero_grad()
         input_ids = tokenizer(input_text, return_tensors="pt")["input_ids"].to(device)
 
@@ -90,22 +110,32 @@ def compute_param_relevance_attnlrp(model_path, input_texts):
     return np.mean(all_per_layer, axis=0)
 
 
-print("Computing AttnLRP parameter relevance for Model A (SciQ)...")
-rel_A = compute_param_relevance_attnlrp("aiaa4051/task3/modelA/final", TEST_TEXTS_A)
+print("Loading datasets...")
+test_texts_A = load_sciq_test_texts(N_SAMPLES)
+test_texts_B = load_squad_val_texts(N_SAMPLES)
 
-print("Computing AttnLRP parameter relevance for Model B (SQuAD_v2)...")
-rel_B = compute_param_relevance_attnlrp("aiaa4051/task3/modelB/final", TEST_TEXTS_B)
+print("\nComputing AttnLRP parameter relevance for Model A (SciQ)...")
+rel_A = compute_param_relevance_attnlrp("aiaa4051/task3/modelA/final", test_texts_A)
 
-payload = build_param_relevance_payload(rel_A, rel_B, TEST_TEXTS_A, TEST_TEXTS_B)
+print("\nComputing AttnLRP parameter relevance for Model B (SQuAD_v2)...")
+rel_B = compute_param_relevance_attnlrp("aiaa4051/task3/modelB/final", test_texts_B)
+
+payload = build_param_relevance_payload(rel_A, rel_B, test_texts_A, test_texts_B)
 payload["metric"] = "attnlrp_weight_x_grad"
+payload["n_samples"] = N_SAMPLES
 
-with open("aiaa4051/task3/comparison/param_relevance_data.pkl", "wb") as f:
+out_path = Path("aiaa4051/task3/comparison/param_relevance_data.pkl")
+with open(out_path, "wb") as f:
     pickle.dump(payload, f)
-print("Saved: aiaa4051/task3/comparison/param_relevance_data.pkl")
+print(f"\nSaved: {out_path}")
 
 diff = payload["diff_norm"]
 top3 = np.argsort(np.abs(diff))[::-1][:3]
-print(f"\nTop 3 layers with largest difference:")
+print(f"\nTop 3 layers with largest difference (N={N_SAMPLES} inputs each):")
 for l in top3:
     who = "Model A (SciQ)" if diff[l] > 0 else "Model B (SQuAD_v2)"
-    print(f"  Layer {l:2d}: delta={diff[l]:+.4f} → {who} relies more")
+    print(f"  Layer {int(l):2d}: delta={diff[l]:+.4f} → {who} relies more")
+
+print(f"\nAll layer deltas (A-B):")
+for i, d in enumerate(diff):
+    print(f"  Layer {i:2d}: {d:+.4f}")

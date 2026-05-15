@@ -9,6 +9,8 @@ Run task1_faithfulness.py first to generate the pkl.
 import pickle
 from pathlib import Path
 
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
@@ -61,6 +63,9 @@ def main():
 
     plt.rcParams.update({
         "font.family": "DejaVu Sans",
+        "pdf.fonttype": 42,
+        "ps.fonttype": 42,
+        "svg.fonttype": "none",
         "axes.edgecolor": "#D9D0C8",
         "axes.labelcolor": "#2C2420",
         "axes.titlecolor": "#2C2420",
@@ -105,9 +110,11 @@ def main():
     fig.tight_layout()
     fig.savefig(OUT_DIR / "faithfulness_curve.png", dpi=300, bbox_inches="tight")
     fig.savefig(OUT_DIR / "faithfulness_curve.pdf", bbox_inches="tight")
+    fig.savefig(OUT_DIR / "faithfulness_curve.svg", bbox_inches="tight")
     plt.close(fig)
     print("Saved: aiaa4051/task1/faithfulness/faithfulness_curve.png")
     print("Saved: aiaa4051/task1/faithfulness/faithfulness_curve.pdf")
+    print("Saved: aiaa4051/task1/faithfulness/faithfulness_curve.svg")
 
     print(f"\nNormalized AUC:")
     print(f"  AttnLRP (relevance order) : {auc['attnlrp']:.4f}")
